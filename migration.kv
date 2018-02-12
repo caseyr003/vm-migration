@@ -221,9 +221,14 @@ ScreenManagement:
             adapter: ListAdapter(data=root.data, cls=Factory.AccountListItem, args_converter=root.args_converter)
 
 <AccountListItem>:
-    height: '190sp'
+    height: '200sp'
     size_hint_y: None
     padding: '14sp'
+    canvas:
+        Color:
+            rgba: [1,1,1,1]
+        Rectangle:
+            size: self.size
     BoxLayout:
         orientation: 'vertical'
         padding: [20, 10, 10, 20]
@@ -232,7 +237,7 @@ ScreenManagement:
             text_size: self.size
             font_size: '28sp'
             bold: True
-            color: [90/255.0, 90/255.0, 90/255.0, 1]
+            color: [0/255.0, 168/255.0, 28/255.0, 1]
             size_hint: [1, 0.2]
 
         BoxLayout:
@@ -291,6 +296,7 @@ ScreenManagement:
     user_ocid_input: user_ocid_input
     region_input: region_input
     fingerprint_input: fingerprint_input
+    key_chooser: key_chooser
     BoxLayout:
         padding: '18dp'
         orientation: 'vertical'
@@ -363,6 +369,7 @@ ScreenManagement:
                     text: ''
 
             KeyFileChooser:
+                id: key_chooser
 
             BoxLayout:
                 orientation: 'vertical'
@@ -426,6 +433,7 @@ ScreenManagement:
     custom_image_name: custom_image_name
     compartment_dropdown: compartment_dropdown
     bucket_dropdown: bucket_dropdown
+    image_chooser: image_chooser
     BoxLayout:
         padding: '18dp'
         orientation: 'vertical'
@@ -462,6 +470,7 @@ ScreenManagement:
                     color: [.3, .3, .3, 1]
 
             ImageFileChooser:
+                id: image_chooser
 
             CompartmentDropdown:
                 id: compartment_dropdown

@@ -28,10 +28,12 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.clock import Clock
 from kivy.uix.spinner import Spinner
 from kivy.uix.popup import Popup
+from kivy.graphics import *
 import oci
 import time
 from functools import partial
 import threading
+from multiprocessing import Process
 from oci.object_storage.transfer.constants import MEBIBYTE
 from modules import *
 
@@ -69,6 +71,7 @@ class AddAccountScreen(Screen):
     region_input = ObjectProperty(None)
     fingerprint_input = ObjectProperty(None)
     key_file_path = ObjectProperty(None)
+    key_chooser = ObjectProperty()
 
     def __init__(self, *args, **kwargs):
         super(AddAccountScreen, self).__init__(*args, **kwargs)
@@ -84,6 +87,7 @@ class AddAccountScreen(Screen):
 
     def cancel(self):
         self.clear_input()
+        self.parent.transition.direction = 'right'
         self.parent.current = Accounts().name
 
     def clear_input(self):
@@ -93,6 +97,7 @@ class AddAccountScreen(Screen):
         self.region_input.text = ''
         self.fingerprint_input.text = ''
         self.key_file_path = ''
+        self.key_chooser.file_btn.text = 'Choose File'
 
     def save_account(self):
         self.show_load()
@@ -127,18 +132,17 @@ class AddAccountScreen(Screen):
         App.get_running_app().load_data()
         self.dismiss_popup()
         self.clear_input()
+        self.parent.transition.direction = 'right'
         self.parent.current = Accounts().name
 
 class VMListItem(BoxLayout):
-
-    def __init__(self, **kwargs):
-        print(kwargs)
-        del kwargs['index']
-        super(VMListItem, self).__init__(**kwargs)
-
     vm_index = NumericProperty()
     vm_name = StringProperty()
     vm_ocid = StringProperty()
+
+    def __init__(self, **kwargs):
+        super(VMListItem, self).__init__(**kwargs)
+
 
 class VMScreen(Screen):
     data = ListProperty()
@@ -166,6 +170,7 @@ class AddImageScreen(Screen):
     compartment_list = ObjectProperty(None)
     bucket_dropdown = ObjectProperty(None)
     compartment_dropdown = ObjectProperty(None)
+    image_chooser = ObjectProperty()
 
     def __init__(self, *args, **kwargs):
         super(AddImageScreen, self).__init__(*args, **kwargs)
@@ -204,7 +209,9 @@ class AddImageScreen(Screen):
         self.selected_bucket = bucket
 
     def add_vm(self):
-        App.get_running_app().load_vm_options(self.account, self.selected_compartment, self.selected_bucket, self.image_file_path, self.custom_image_name.text, self.image_type)
+        App.get_running_app().load_vm_options(self.account, self.selected_compartment,
+                                              self.selected_bucket, self.image_file_path,
+                                              self.custom_image_name.text, self.image_type)
 
 class AddVMScreen(Screen):
     launch_vm_switch = ObjectProperty(None)
@@ -271,18 +278,26 @@ class AddVMScreen(Screen):
         launch_mode="EMULATED"
 
         part_size = 1000 * MEBIBYTE
-        upload_man = oci.object_storage.UploadManager(obj_store, allow_parallel_uploads=True, parallel_process_count=3)
+        upload_man = oci.object_storage.UploadManager(obj_store, allow_parallel_uploads=True,
+                                                      parallel_process_count=3)
         print 'Starting upload to OCI object storage...'
         print 'Uploading... 0%%'
-        upload_res = upload_man.upload_file(namespace, bucket_selected, file_name, file_path, part_size=part_size, progress_callback=self.progress_callback)
+        upload_res = upload_man.upload_file(namespace, bucket_selected, file_name,
+                                            file_path, part_size=part_size,
+                                            progress_callback=self.progress_callback)
         self._popup.content.popup_label.text = "Image Successfully uploaded to Object Storage"
 
         source_uri="https://objectstorage.%s.oraclecloud.com/n/%s/b/%s/o/%s" % (region, namespace, bucket_selected, file_name)
 
 
         print 'Starting image import from object storage...'
-        image_source_details = oci.core.models.ImageSourceViaObjectStorageUriDetails(source_image_type=source_image_type, source_type="objectStorageUri", source_uri=source_uri)
-        create_image_details = oci.core.models.CreateImageDetails(compartment_id=compartment_selected, display_name=display_name, image_source_details=image_source_details, launch_mode=launch_mode)
+        image_source_details = oci.core.models.ImageSourceViaObjectStorageUriDetails(source_image_type=source_image_type,
+                                                                                     source_type="objectStorageUri",
+                                                                                     source_uri=source_uri)
+        create_image_details = oci.core.models.CreateImageDetails(compartment_id=compartment_selected,
+                                                                  display_name=display_name,
+                                                                  image_source_details=image_source_details,
+                                                                  launch_mode=launch_mode)
         create_image_res = compute_store.create_image(create_image_details=create_image_details)
         image_id=create_image_res.data.id
 
@@ -330,14 +345,21 @@ class AddVMScreen(Screen):
         subnet_selected = self.selected_subnet.id
 
         part_size = 1000 * MEBIBYTE
-        upload_man = oci.object_storage.UploadManager(obj_store, allow_parallel_uploads=True, parallel_process_count=3)
-        upload_res = upload_man.upload_file(namespace, bucket_selected, file_name, file_path, part_size=part_size, progress_callback=self.progress_callback)
+        upload_man = oci.object_storage.UploadManager(obj_store, allow_parallel_uploads=True,
+                                                      parallel_process_count=3)
+        upload_res = upload_man.upload_file(namespace, bucket_selected, file_name, file_path, part_size=part_size,
+                                            progress_callback=self.progress_callback)
         # self._popup.content.popup_label.text = "Image Successfully uploaded to Object Storage"
 
         source_uri="https://objectstorage.%s.oraclecloud.com/n/%s/b/%s/o/%s" % (region, namespace, bucket_selected, file_name)
 
-        image_source_details = oci.core.models.ImageSourceViaObjectStorageUriDetails(source_image_type=source_image_type, source_type="objectStorageUri", source_uri=source_uri)
-        create_image_details = oci.core.models.CreateImageDetails(compartment_id=compartment_selected, display_name=display_name, image_source_details=image_source_details, launch_mode=launch_mode)
+        image_source_details = oci.core.models.ImageSourceViaObjectStorageUriDetails(source_image_type=source_image_type,
+                                                                                     source_type="objectStorageUri",
+                                                                                     source_uri=source_uri)
+        create_image_details = oci.core.models.CreateImageDetails(compartment_id=compartment_selected,
+                                                                  display_name=display_name,
+                                                                  image_source_details=image_source_details,
+                                                                  launch_mode=launch_mode)
         create_image_res = compute_store.create_image(create_image_details=create_image_details)
         image_id=create_image_res.data.id
 
@@ -357,7 +379,12 @@ class AddVMScreen(Screen):
 
         create_vnic_details = oci.core.models.CreateVnicDetails(subnet_id=subnet_selected)
 
-        launch_instance_details = oci.core.models.LaunchInstanceDetails(availability_domain=ad_selected, compartment_id=compartment_selected, create_vnic_details=create_vnic_details, display_name=display_name, image_id=image_id, shape=shape_selected)
+        launch_instance_details = oci.core.models.LaunchInstanceDetails(availability_domain=ad_selected,
+                                                                        compartment_id=compartment_selected,
+                                                                        create_vnic_details=create_vnic_details,
+                                                                        display_name=display_name,
+                                                                        image_id=image_id,
+                                                                        shape=shape_selected)
 
         create_vm_res = compute_store.launch_instance(launch_instance_details=launch_instance_details)
         instance_id = create_vm_res.data.id
@@ -434,11 +461,6 @@ class ScreenManagement(ScreenManager):
     pass
 
 class AccountListItem(BoxLayout):
-
-    def __init__(self, **kwargs):
-        del kwargs['index']
-        super(AccountListItem, self).__init__(**kwargs)
-
     account_index = NumericProperty()
     account_name = StringProperty()
     account_tenancy = StringProperty()
@@ -446,6 +468,17 @@ class AccountListItem(BoxLayout):
     account_region = StringProperty()
     account_fingerprint = StringProperty()
     account_key = StringProperty()
+
+    def __init__(self, **kwargs):
+        super(AccountListItem, self).__init__(**kwargs)
+    #     with self.canvas:
+    #         Color(1,1,1,1)
+    #         self.rect = Rectangle(size=self.size)
+    #
+    #     self.bind(size=self.update_rect)
+    #
+    # def update_rect(self, *args):
+    #     self.rect.size = self.size
 
     def account_details(self):
         App.get_running_app().load_account(self.account_index)
@@ -490,7 +523,8 @@ class MigrationApp(App):
             data = json.load(data_file)
             account_list = []
             for index, x in enumerate(data["accounts"]):
-                account = Account(x["name"], x["tenancy_ocid"], x["user_ocid"], x["region"], x["fingerprint"], x["key_location"], x["vms"])
+                account = Account(x["name"], x["tenancy_ocid"], x["user_ocid"], x["region"],
+                                  x["fingerprint"], x["key_location"], x["vms"])
                 account_list.append(account)
             self.accounts.data = account_list
 
@@ -499,6 +533,7 @@ class MigrationApp(App):
         if self.account.account.is_active(self.config_file):
             self.account.account_title.text = self.accounts.data[index].name
             self.account.data = self.accounts.data[index].vm_list
+            self.transition.direction = 'left'
             self.root.current = self.account.name
         else:
             print "Account Error"
@@ -534,6 +569,7 @@ class MigrationApp(App):
     def cancel_image(self):
         self.clear_compartment_dropdown()
         self.clear_bucket_dropdown()
+        self.clear_image_chooser()
         self.transition.direction = 'right'
         self.root.current = self.account.name
 
@@ -552,9 +588,13 @@ class MigrationApp(App):
         self.clear_shape_dropdown()
         self.clear_vcn_dropdown()
         self.clear_subnet_dropdown()
+        self.clear_image_chooser()
         view = VMScreen()
         self.transition.direction = 'right'
         self.root.current = view.name
+
+    def clear_image_chooser(self):
+        self.image_screen.image_chooser.file_btn.text = 'Choose File'
 
     def clear_compartment_dropdown(self):
         self.image_screen.compartment_dropdown.compartment_dropdown.clear_widgets()
