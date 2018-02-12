@@ -1,0 +1,566 @@
+#:kivy 1.7.1
+#:import ListAdapter kivy.adapters.listadapter.ListAdapter
+#:import Factory kivy.factory.Factory
+#:import SlideTransition kivy.uix.screenmanager.FadeTransition
+#:import label kivy.uix.label
+#:import sla kivy.adapters.simplelistadapter
+#:import partial functools.partial
+
+## Screen Manager
+ScreenManagement:
+    transition: SlideTransition()
+    AccountScreen:
+    AddAccountScreen:
+    VMScreen:
+    AddImageScreen:
+    AddVMScreen:
+
+<Screen>:
+    canvas:
+        Color:
+            rgba: [240/255.0, 240/255.0, 240/255.0, 1]
+        Rectangle:
+            size: self.size
+
+
+## Custom Widgets
+<InputLabel@Label>:
+    text_size: self.size
+    color: [90/255.0, 90/255.0, 90/255.0, 1]
+
+<InputText@TextInput>:
+    color: [90/255.0, 90/255.0, 90/255.0, 1]
+    background_color: [1, 1, 1, 1]
+    multiline: False
+
+<NavButton@Button>:
+    color: [90/255.0, 90/255.0, 90/255.0, 1]
+    background_color: [240/255.0, 240/255.0, 240/255.0, 0.3]
+
+<SaveButton@Button>:
+    color: [1, 1, 1, 1]
+    background_color: [0.290, 0.670, 0.992, 1]
+
+## Dropdowns
+<BucketDropdown>:
+    bucket_box: bucket_box
+    bucket_button: bucket_button
+    BoxLayout:
+        id: bucket_box
+        orientation: 'vertical'
+        InputLabel:
+            text: 'Select Object Storage Bucket'
+        Button:
+            id: bucket_button
+            disabled: True
+            text: '-'
+
+<CompartmentDropdown>:
+    compartment_box: compartment_box
+    compartment_button: compartment_button
+    BoxLayout:
+        id: compartment_box
+        orientation: 'vertical'
+        InputLabel:
+            text: 'Select Compartment'
+        Button:
+            id: compartment_button
+            disabled: True
+            text: '-'
+
+<AvailabilityDomainDropdown>:
+    availability_domain_box: availability_domain_box
+    availability_domain_button: availability_domain_button
+    BoxLayout:
+        id: availability_domain_box
+        orientation: 'vertical'
+        InputLabel:
+            text: 'Select Availability Domain'
+        Button:
+            id: availability_domain_button
+            disabled: True
+            text: '-'
+
+<VirtualCloudNetworkDropdown>:
+    vcn_box: vcn_box
+    vcn_button: vcn_button
+    BoxLayout:
+        id: vcn_box
+        orientation: 'vertical'
+        InputLabel:
+            text: 'Select Virtual Cloud Network'
+        Button:
+            id: vcn_button
+            disabled: True
+            text: '-'
+
+<SubnetDropdown>:
+    subnet_box: subnet_box
+    subnet_button: subnet_button
+    BoxLayout:
+        id: subnet_box
+        orientation: 'vertical'
+        InputLabel:
+            text: 'Select Subnet'
+        Button:
+            id: subnet_button
+            disabled: True
+            text: '-'
+
+<ShapeDropdown>:
+    shape_box: shape_box
+    shape_button: shape_button
+    BoxLayout:
+        id: shape_box
+        orientation: 'vertical'
+        InputLabel:
+            text: 'Select Shape'
+        Button:
+            id: shape_button
+            disabled: True
+            text: '-'
+
+
+## FileChoosers
+<ImageFileChooser>:
+    file_btn: file_btn
+    BoxLayout:
+        orientation: 'vertical'
+        InputLabel:
+            text: 'VMDK or QCOW2 file'
+        Button:
+            id: file_btn
+            text: 'Choose File'
+            on_release: root.show_load()
+
+<KeyFileChooser>:
+    file_btn: file_btn
+    BoxLayout:
+        orientation: 'vertical'
+        InputLabel:
+            text: 'Choose Private Key File'
+        Button:
+            id: file_btn
+            text: 'Choose File'
+            on_release: root.show_load()
+
+## Loading Popups
+<LoadDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserIconView:
+            id: filechooser
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+
+            Button:
+                text: "Choose"
+                on_release: root.load(filechooser.path, filechooser.selection)
+
+<LoadingPopup>:
+    popup_container: popup_container
+    popup_label: popup_label
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        BoxLayout:
+            id: popup_container
+            orientation: "vertical"
+            Label:
+                id: popup_label
+                text: 'Loading...'
+                font_size: '20dp'
+
+
+## Screens
+
+<Accounts>:
+    name: 'account'
+    BoxLayout:
+        orientation: 'vertical'
+        padding: '20dp'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: '54dp'
+            padding: '8dp'
+
+            Image:
+                source: 'data/logo.png'
+
+            Label:
+                text: ''
+            Label:
+                text: ''
+
+            BoxLayout:
+
+                Button:
+                    text: 'Add OCI Account'
+                    width: self.width
+                    on_release: app.add_account()
+
+        BoxLayout:
+            orientation: 'vertical'
+            height: '54dp'
+            size_hint_y: None
+            Label:
+                text: 'Oracle Cloud Infrastructure Accounts'
+                font_size: '22dp'
+                color: [.3, .3, .3, 1]
+
+        ListView:
+            adapter: ListAdapter(data=root.data, cls=Factory.AccountListItem, args_converter=root.args_converter)
+
+<AccountListItem>:
+    height: '190sp'
+    size_hint_y: None
+    padding: '14sp'
+    BoxLayout:
+        orientation: 'vertical'
+        padding: [20, 10, 10, 20]
+        Label:
+            text: root.account_name
+            text_size: self.size
+            font_size: '28sp'
+            bold: True
+            color: [90/255.0, 90/255.0, 90/255.0, 1]
+            size_hint: [1, 0.2]
+
+        BoxLayout:
+            size_hint: [1, 0.46]
+            orientation: 'vertical'
+            Label:
+                text: root.account_tenancy
+                text_size: self.size
+                color: [90/255.0, 90/255.0, 90/255.0, 1]
+
+            Label:
+                text: root.account_user
+                text_size: self.size
+                color: [90/255.0, 90/255.0, 90/255.0, 1]
+
+            Label:
+                text: root.account_region
+                text_size: self.size
+                color: [90/255.0, 90/255.0, 90/255.0, 1]
+
+        BoxLayout:
+            padding: 0, 10, 0, 0
+            size_hint: [1, 0.34]
+            Button:
+                text: 'Go to Account'
+                on_release: root.account_details()
+
+<VMListItem>:
+    height: '190sp'
+    size_hint_y: None
+    padding: '14sp'
+    BoxLayout:
+        orientation: 'vertical'
+        padding: [20, 10, 10, 20]
+        Label:
+            text: root.vm_name
+            text_size: self.size
+            font_size: '28sp'
+            bold: True
+            color: [90/255.0, 90/255.0, 90/255.0, 1]
+            size_hint: [1, 0.2]
+
+        BoxLayout:
+            size_hint: [1, 0.46]
+            orientation: 'vertical'
+            Label:
+                text: root.vm_ocid
+                text_size: self.size
+                color: [90/255.0, 90/255.0, 90/255.0, 1]
+
+
+<AddAccountScreen>:
+    name: 'add_account'
+    display_name_input: display_name_input
+    tenancy_ocid_input: tenancy_ocid_input
+    user_ocid_input: user_ocid_input
+    region_input: region_input
+    fingerprint_input: fingerprint_input
+    BoxLayout:
+        padding: '18dp'
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: '54dp'
+            padding: '8dp'
+
+            Image:
+                source: 'data/logo.png'
+
+            Label:
+                text: ''
+            Label:
+                text: ''
+
+            BoxLayout:
+
+                Button:
+                    text: 'Cancel'
+                    width: self.width
+                    on_release: root.cancel()
+
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: '5dp'
+
+            BoxLayout:
+                orientation: 'vertical'
+                Label:
+                    text: 'Oracle Cloud Infrastructure Account'
+                    font_size: '22dp'
+                    color: [.3, .3, .3, 1]
+
+            BoxLayout:
+                orientation: 'vertical'
+                InputLabel:
+                    text: 'Name (display name for account)'
+                InputText:
+                    id: display_name_input
+                    text: ''
+            BoxLayout:
+                orientation: 'vertical'
+                InputLabel:
+                    text: 'Tenancy OCID'
+                InputText:
+                    id: tenancy_ocid_input
+                    text: ''
+            BoxLayout:
+                orientation: 'vertical'
+                InputLabel:
+                    text: 'User OCID'
+                InputText:
+                    id: user_ocid_input
+                    text: ''
+            BoxLayout:
+                orientation: 'vertical'
+                InputLabel:
+                    text: 'Region'
+                InputText:
+                    id: region_input
+                    text: ''
+            BoxLayout:
+                orientation: 'vertical'
+                InputLabel:
+                    text: 'Fingerprint'
+                InputText:
+                    id: fingerprint_input
+                    text: ''
+
+            KeyFileChooser:
+
+            BoxLayout:
+                orientation: 'vertical'
+                padding: [0, 16, 0, 0]
+                SaveButton:
+                    text: 'Save'
+                    on_release: root.save_account()
+
+<VMScreen>:
+    name: 'vm'
+    account_title: account_title
+    BoxLayout:
+        orientation: 'vertical'
+        padding: '20dp'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: '54dp'
+            padding: '8dp'
+
+            Image:
+                source: 'data/logo.png'
+                size_hint: [0.25, 1]
+
+            Label:
+                text: ''
+                size_hint: [0.3, 1]
+
+            BoxLayout:
+                size_hint: [0.45, 1]
+                BoxLayout:
+                    padding: [0, 0, 10, 0]
+                    size_hint: [0.4, 1]
+                    Button:
+                        text: 'Back'
+                        width: self.width
+                        on_release: app.view_accounts()
+                BoxLayout:
+                    size_hint: [0.6, 1]
+                    Button:
+                        text: 'Migrate New VM'
+                        width: self.width
+                        on_release: root.add_vm()
+        BoxLayout:
+            orientation: 'vertical'
+            height: '54dp'
+            size_hint_y: None
+            Label:
+                id: account_title
+                text: "Tenancy"
+                font_size: '22dp'
+                color: [.3, .3, .3, 1]
+
+        ListView:
+            adapter: ListAdapter(data=root.data, cls=Factory.VMListItem, args_converter=root.args_converter)
+
+
+<AddImageScreen>:
+    name: 'add_image'
+    id: add_image_screen
+    custom_image_name: custom_image_name
+    compartment_dropdown: compartment_dropdown
+    bucket_dropdown: bucket_dropdown
+    BoxLayout:
+        padding: '18dp'
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: '54dp'
+            padding: '8dp'
+
+            Image:
+                source: 'data/logo.png'
+
+            Label:
+                text: ''
+            Label:
+                text: ''
+
+            BoxLayout:
+
+                Button:
+                    text: 'Cancel'
+                    width: self.width
+                    on_release: app.cancel_image()
+
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: '5dp'
+
+            BoxLayout:
+                orientation: 'vertical'
+                Label:
+                    text: 'Image Details'
+                    font_size: '22dp'
+                    color: [.3, .3, .3, 1]
+
+            ImageFileChooser:
+
+            CompartmentDropdown:
+                id: compartment_dropdown
+            BucketDropdown:
+                id: bucket_dropdown
+            BoxLayout:
+                orientation: 'vertical'
+                InputLabel:
+                    text: 'Name for custom image'
+                InputText:
+                    id: custom_image_name
+                    text: ''
+
+
+            BoxLayout:
+                orientation: 'vertical'
+                padding: [0, 16, 0, 0]
+                SaveButton:
+                    text: 'Next'
+                    on_release: root.add_vm()
+
+<AddVMScreen>:
+    name: 'add_vm'
+    launch_vm_switch: launch_vm_switch
+    ad_dropdown: ad_dropdown
+    vcn_dropdown: vcn_dropdown
+    subnet_dropdown: subnet_dropdown
+    shape_dropdown: shape_dropdown
+
+    BoxLayout:
+        padding: '18dp'
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: '54dp'
+            padding: '8dp'
+
+            Image:
+                source: 'data/logo.png'
+                size_hint: [0.25, 1]
+
+            Label:
+                text: ''
+                size_hint: [0.3, 1]
+
+            BoxLayout:
+                size_hint: [0.45, 1]
+                BoxLayout:
+                    padding: [0, 0, 10, 0]
+                    size_hint: [0.4, 1]
+                    Button:
+                        text: 'Back'
+                        width: self.width
+                        on_release: app.back_vm()
+                BoxLayout:
+                    size_hint: [0.6, 1]
+                    Button:
+                        text: 'Cancel'
+                        width: self.width
+                        on_release: app.cancel_vm()
+
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: '5dp'
+
+            BoxLayout:
+                orientation: 'vertical'
+                Label:
+                    text: 'Virtual Machine Details'
+                    font_size: '22dp'
+                    color: [.3, .3, .3, 1]
+
+            BoxLayout:
+                orientation: 'vertical'
+                InputLabel:
+                    text: 'Launch VM with Image'
+                Switch:
+                    id: launch_vm_switch
+
+            AvailabilityDomainDropdown:
+                id: ad_dropdown
+                disabled: not root.launch_with_vm
+
+            ShapeDropdown:
+                id: shape_dropdown
+                disabled: not root.launch_with_vm
+
+            VirtualCloudNetworkDropdown:
+                id: vcn_dropdown
+                disabled: not root.launch_with_vm
+
+            SubnetDropdown:
+                id: subnet_dropdown
+                disabled: not root.launch_with_vm
+
+            BoxLayout:
+                orientation: 'vertical'
+                padding: [0, 16, 0, 0]
+                SaveButton:
+                    text: 'Launch'
+                    on_release: root.launch()
