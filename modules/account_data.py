@@ -245,6 +245,21 @@ class Account:
         instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
         return instance_status
 
+    def add_vm(self, data_file, index, name, ocid, ip):
+        new_vm = {
+            'name': name,
+            'ocid': ocid,
+            'ip': ip
+        }
+        with open(data_file, 'r') as read_data:
+            data = json.load(read_data)
+
+        data["accounts"][index]["vms"].append(new_vm)
+
+        with open(data_file, 'w') as write_data:
+            json.dump(data, write_data, indent=2)
+
+
 class Bucket:
     def __init__(self, name):
         self.name = name

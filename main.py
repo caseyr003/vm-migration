@@ -111,6 +111,7 @@ class VMListItem(BoxLayout):
     vm_index = NumericProperty()
     vm_name = StringProperty()
     vm_ocid = StringProperty()
+    vm_ip = StringProperty()
 
     def __init__(self, **kwargs):
         print kwargs
@@ -126,7 +127,8 @@ class VMScreen(Screen):
         return {
             'vm_index': row_index,
             'vm_name': item['name'],
-            'vm_ocid': item['vm_ocid']}
+            'vm_ocid': item['ocid'],
+            'vm_ip': item['ip']}
 
     def add_vm(self):
         App.get_running_app().load_image_options()
@@ -246,9 +248,15 @@ class AddVMScreen(Screen):
                                           display_name, image_type, compartment_id)
         if image[0]:
             print "Custom Image import complete"
+            image_id = image[1]
         else:
             print "Error creating image"
+
+        data_file = App.get_running_app().data_file
+        index = App.get_running_app().current_index
+        self.account.add_vm(data_file, index, file_name, image_id, "n/a")
         self.dismiss_load()
+        App.get_running_app().reload_account(index)
 
     def launch_vm(self):
         config_file = App.get_running_app().config_file
@@ -278,7 +286,15 @@ class AddVMScreen(Screen):
         subnet_id = self.selected_subnet.id
         vm = self.account.provision_vm(config_file, subnet_id, ad_name, compartment_id,
                                        display_name, image_id, shape)
+
+        data_file = App.get_running_app().data_file
+        index = App.get_running_app().current_index
+        instance_id = vm[1]
+        instance_ip = vm[2]
+
+        self.account.add_vm(data_file, index, display_name, instance_id, instance_ip)
         self.dismiss_load()
+        App.get_running_app().reload_account(index)
 
     def get_availability_domain(self, ad):
         self.selected_availability_domain = ad
@@ -346,6 +362,7 @@ class Accounts(Screen):
 class MigrationApp(App):
     def build(self):
         self.title = 'Oracle VM Migration'
+        self.current_index = 0
         self.transition = SlideTransition(duration=.35)
         self.accounts = Accounts()
         self.account = VMScreen()
@@ -376,10 +393,24 @@ class MigrationApp(App):
 
     def load_account(self, index):
         self.account.account = self.accounts.data[index]
+        self.current_index = index
         if self.account.account.is_active(self.config_file):
             self.account.account_title.text = self.accounts.data[index].name
             self.account.data = self.accounts.data[index].vm_list
             self.transition.direction = 'left'
+            self.root.current = self.account.name
+        else:
+            print "Account Error"
+            return
+
+    def reload_account(self, index):
+        self.load_data()
+        self.account.account = self.accounts.data[index]
+        self.current_index = index
+        if self.account.account.is_active(self.config_file):
+            self.account.account_title.text = self.accounts.data[index].name
+            self.account.data = self.accounts.data[index].vm_list
+            self.transition.direction = 'right'
             self.root.current = self.account.name
         else:
             print "Account Error"
