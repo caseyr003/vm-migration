@@ -30,38 +30,10 @@ from kivy.uix.spinner import Spinner
 from kivy.uix.popup import Popup
 from kivy.graphics import *
 import oci
-import time
 from functools import partial
 import threading
 from multiprocessing import Process
-from oci.object_storage.transfer.constants import MEBIBYTE
 from modules import *
-
-
-class AccountScreen(Screen):
-    data = ListProperty()
-
-    def args_converter(self, row_index, item):
-        return {
-            'account_index': row_index,
-            'account_name': item['name'],
-            'account_tenancy': item['tenancy'],
-            'account_user': item['user'],
-            'account_region': item['region'],
-            'account_fingerprint': item['fingerprint'],
-            'account_key': item['key']}
-
-class AccountItem(BoxLayout):
-    def __init__(self, **kwargs):
-        print(kwargs)
-        del kwargs['index']
-        super(AccountItem, self).__init__(**kwargs)
-    name = StringProperty()
-    tenancy = StringProperty()
-    user = StringProperty()
-    region = StringProperty()
-    fingerprint = StringProperty()
-    key = StringProperty()
 
 
 class AddAccountScreen(Screen):
@@ -141,6 +113,7 @@ class VMListItem(BoxLayout):
     vm_ocid = StringProperty()
 
     def __init__(self, **kwargs):
+        print kwargs
         super(VMListItem, self).__init__(**kwargs)
 
 
@@ -248,172 +221,64 @@ class AddVMScreen(Screen):
         self.launch_with_vm = x
 
     def launch(self):
+        self.show_load()
         if self.launch_vm_switch.active:
-            self.popup_thread()
+            self.launch_vm()
         else:
             self.launch_image()
 
     def launch_image(self):
-        content = LoadingPopup()
-        self._popup = Popup(title="Oracle Cloud Infrastructure VM Migration", content=content,
-                            size_hint=(0.8, 0.4))
-
-        self._popup.content.popup_label.text = "Step 1/2: Uploading Image to Object Storage"
-        self._popup.open()
         config_file = App.get_running_app().config_file
-        config = oci.config.from_file(file_location=config_file)
-
-        identity_store = oci.identity.identity_client.IdentityClient(config)
-        compute_store = oci.core.compute_client.ComputeClient(config)
-        obj_store = oci.object_storage.ObjectStorageClient(config)
-
-        namespace = obj_store.get_namespace().data
-        bucket_selected = self.selected_bucket.name
+        bucket_name = self.selected_bucket.name
         file_name = self.image_name
-        region = self.account.region
         file_path = self.image_file_path
-        source_image_type = self.image_type
-        display_name = self.image_name
-        compartment_selected = self.selected_compartment.id
-        launch_mode="EMULATED"
+        upload = self.account.upload_image(config_file, bucket_name, file_name, file_path)
+        if upload[0]:
+            namespace = upload[1]
+        else:
+            print "Error uploading"
+            return
 
-        part_size = 1000 * MEBIBYTE
-        upload_man = oci.object_storage.UploadManager(obj_store, allow_parallel_uploads=True,
-                                                      parallel_process_count=3)
-        print 'Starting upload to OCI object storage...'
-        print 'Uploading... 0%%'
-        upload_res = upload_man.upload_file(namespace, bucket_selected, file_name,
-                                            file_path, part_size=part_size,
-                                            progress_callback=self.progress_callback)
-        self._popup.content.popup_label.text = "Image Successfully uploaded to Object Storage"
-
-        source_uri="https://objectstorage.%s.oraclecloud.com/n/%s/b/%s/o/%s" % (region, namespace, bucket_selected, file_name)
-
-
-        print 'Starting image import from object storage...'
-        image_source_details = oci.core.models.ImageSourceViaObjectStorageUriDetails(source_image_type=source_image_type,
-                                                                                     source_type="objectStorageUri",
-                                                                                     source_uri=source_uri)
-        create_image_details = oci.core.models.CreateImageDetails(compartment_id=compartment_selected,
-                                                                  display_name=display_name,
-                                                                  image_source_details=image_source_details,
-                                                                  launch_mode=launch_mode)
-        create_image_res = compute_store.create_image(create_image_details=create_image_details)
-        image_id=create_image_res.data.id
-
-        image_status = compute_store.get_image(image_id=image_id).data.lifecycle_state
-        self._popup.content.popup_label.text = "Step 2/2: Importing Image from Object Storage"
-        while image_status != "AVAILABLE":
-            if image_status != "IMPORTING":
-                btn = Button(text="Okay", size_hint_y=None, height=40, on_release=lambda btn: self.dismiss_popup())
-                self._popup.content.popup_container.add_widget(btn)
-                self._popup.content.popup_label.text = "Image Import was not successful"
-                return
-                exit()
-            time.sleep(20)
-            image_status = compute_store.get_image(image_id=image_id).data.lifecycle_state
-
-        btn = Button(text="Okay", size_hint_y=None, height=40, on_release=lambda btn: self.image_complete())
-        self._popup.content.popup_container.add_widget(btn)
-        self._popup.content.popup_label.text = "Custom Image Successfully Created"
-
-    def progress_callback(self, bytes_uploaded):
-        print "uploading"
+        display_name = file_name
+        image_type = self.image_type
+        compartment_id = self.selected_compartment.id
+        image = self.account.create_image(config_file, namespace, bucket_name, file_name,
+                                          display_name, image_type, compartment_id)
+        if image[0]:
+            print "Custom Image import complete"
+        else:
+            print "Error creating image"
+        self.dismiss_load()
 
     def launch_vm(self):
-        # self._popup.content.popup_label.text = "Step 1/3: Uploading Image to Object Storage"
-
         config_file = App.get_running_app().config_file
-        config = oci.config.from_file(file_location=config_file)
-
-        identity_store = oci.identity.identity_client.IdentityClient(config)
-        compute_store = oci.core.compute_client.ComputeClient(config)
-        obj_store = oci.object_storage.ObjectStorageClient(config)
-
-        namespace = obj_store.get_namespace().data
-        bucket_selected = self.selected_bucket.name
+        bucket_name = self.selected_bucket.name
         file_name = self.image_name
-        region = self.account.region
         file_path = self.image_file_path
-        source_image_type = self.image_type
-        display_name = self.image_name
-        compartment_selected = self.selected_compartment.id
-        launch_mode="EMULATED"
+        upload = self.account.upload_image(config_file, bucket_name, file_name, file_path)
+        if upload[0]:
+            namespace = upload[1]
+        else:
+            print "Error uploading"
+            return
 
-        ad_selected = self.selected_availability_domain.name
-        shape_selected = self.selected_shape.name
-        subnet_selected = self.selected_subnet.id
+        display_name = file_name
+        image_type = self.image_type
+        compartment_id = self.selected_compartment.id
+        image = self.account.create_image(config_file, namespace, bucket_name, file_name,
+                                          display_name, image_type, compartment_id)
+        if image[0]:
+            image_id = image[1]
+        else:
+            print "Error creating image"
 
-        part_size = 1000 * MEBIBYTE
-        upload_man = oci.object_storage.UploadManager(obj_store, allow_parallel_uploads=True,
-                                                      parallel_process_count=3)
-        upload_res = upload_man.upload_file(namespace, bucket_selected, file_name, file_path, part_size=part_size,
-                                            progress_callback=self.progress_callback)
-        # self._popup.content.popup_label.text = "Image Successfully uploaded to Object Storage"
 
-        source_uri="https://objectstorage.%s.oraclecloud.com/n/%s/b/%s/o/%s" % (region, namespace, bucket_selected, file_name)
-
-        image_source_details = oci.core.models.ImageSourceViaObjectStorageUriDetails(source_image_type=source_image_type,
-                                                                                     source_type="objectStorageUri",
-                                                                                     source_uri=source_uri)
-        create_image_details = oci.core.models.CreateImageDetails(compartment_id=compartment_selected,
-                                                                  display_name=display_name,
-                                                                  image_source_details=image_source_details,
-                                                                  launch_mode=launch_mode)
-        create_image_res = compute_store.create_image(create_image_details=create_image_details)
-        image_id=create_image_res.data.id
-
-        image_status = compute_store.get_image(image_id=image_id).data.lifecycle_state
-        # self._popup.content.popup_label.text = "Step 2/3: Importing Image from Object Storage"
-        while image_status != "AVAILABLE":
-            if image_status != "IMPORTING":
-                btn = Button(text="Okay", size_hint_y=None, height=40, on_release=lambda btn: self.dismiss_popup())
-                self._popup.content.popup_container.add_widget(btn)
-                self._popup.content.popup_label.text = "Image Import was not successful"
-                return
-                exit()
-            time.sleep(20)
-            image_status = compute_store.get_image(image_id=image_id).data.lifecycle_state
-
-        # self._popup.content.popup_label.text = "Step 3/3: Provisioning VM from Custom Image"
-
-        create_vnic_details = oci.core.models.CreateVnicDetails(subnet_id=subnet_selected)
-
-        launch_instance_details = oci.core.models.LaunchInstanceDetails(availability_domain=ad_selected,
-                                                                        compartment_id=compartment_selected,
-                                                                        create_vnic_details=create_vnic_details,
-                                                                        display_name=display_name,
-                                                                        image_id=image_id,
-                                                                        shape=shape_selected)
-
-        create_vm_res = compute_store.launch_instance(launch_instance_details=launch_instance_details)
-        instance_id = create_vm_res.data.id
-        instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
-        print 'Provisioning instance...'
-        while instance_status != "RUNNING":
-            if instance_status != "PROVISIONING":
-                print 'An error occured while provisioning the server'
-                exit()
-            time.sleep(20)
-            instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
-            print 'Provisioning instance... \r'
-
-        vnic = compute_store.list_vnic_attachments(compartment_id=compartment_selected, instance_id=instance_id)
-        vnic_id = res.data[0].vnic_id
-
-        vcn_store = oci.core.virtual_network_client.VirtualNetworkClient(conf)
-
-        vnic_instance = vcn.get_vnic(vnic_id=vnic_id)
-
-        instance_ip = vnic_instance.data.public_ip
-
-        print 'Instance successfully created'
-        print 'Your image is now running in Oracle Cloud Infrastructure'
-        print 'Public IP: %s' % instance_ip
-
-        btn = Button(text="Okay", size_hint_y=None, height=40, on_release=lambda btn: self.dismiss_popup())
-        self._popup.content.popup_container.add_widget(btn)
-        self._popup.content.popup_label.text = "Virtual Machine Successfully Created from Image"
+        ad_name = self.selected_availability_domain.name
+        shape = self.selected_shape.name
+        subnet_id = self.selected_subnet.id
+        vm = self.account.provision_vm(config_file, subnet_id, ad_name, compartment_id,
+                                       display_name, image_id, shape)
+        self.dismiss_load()
 
     def get_availability_domain(self, ad):
         self.selected_availability_domain = ad
@@ -434,22 +299,10 @@ class AddVMScreen(Screen):
         self.selected_shape = shape
 
     def image_complete(self):
-        self.dismiss_popup
-        #Add VM to list
         App.get_running_app().cancel_vm()
 
-
-    def dismiss_popup(self):
+    def dismiss_load(self):
         self._popup.dismiss()
-
-    def popup_thread(self):
-        content = LoadingPopup()
-        self._popup = Popup(title="Oracle Cloud Infrastructure VM Migration", content=content,
-                            size_hint=(0.8, 0.4))
-        self._popup.content.popup_label.text = "Loading..."
-        self._popup.open()
-        mythread = threading.Thread(target=self.launch_vm())
-        mythread.start()
 
     def show_load(self):
         content = LoadingPopup()
@@ -470,22 +323,15 @@ class AccountListItem(BoxLayout):
     account_key = StringProperty()
 
     def __init__(self, **kwargs):
+        print kwargs
         super(AccountListItem, self).__init__(**kwargs)
-    #     with self.canvas:
-    #         Color(1,1,1,1)
-    #         self.rect = Rectangle(size=self.size)
-    #
-    #     self.bind(size=self.update_rect)
-    #
-    # def update_rect(self, *args):
-    #     self.rect.size = self.size
 
     def account_details(self):
         App.get_running_app().load_account(self.account_index)
 
 class Accounts(Screen):
-
     data = ListProperty()
+    account_listview = ObjectProperty()
 
     def args_converter(self, row_index, item):
         return {

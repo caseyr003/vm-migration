@@ -9,11 +9,12 @@
 ## Screen Manager
 ScreenManagement:
     transition: SlideTransition()
-    AccountScreen:
     AddAccountScreen:
     VMScreen:
     AddImageScreen:
     AddVMScreen:
+    Accounts:
+
 
 <Screen>:
     canvas:
@@ -266,9 +267,14 @@ ScreenManagement:
                 on_release: root.account_details()
 
 <VMListItem>:
-    height: '190sp'
+    height: '140sp'
     size_hint_y: None
     padding: '14sp'
+    canvas:
+        Color:
+            rgba: [1,1,1,1]
+        Rectangle:
+            size: self.size
     BoxLayout:
         orientation: 'vertical'
         padding: [20, 10, 10, 20]
@@ -277,11 +283,8 @@ ScreenManagement:
             text_size: self.size
             font_size: '28sp'
             bold: True
-            color: [90/255.0, 90/255.0, 90/255.0, 1]
-            size_hint: [1, 0.2]
-
+            color: [0/255.0, 168/255.0, 28/255.0, 1]
         BoxLayout:
-            size_hint: [1, 0.46]
             orientation: 'vertical'
             Label:
                 text: root.vm_ocid

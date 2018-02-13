@@ -1,7 +1,9 @@
 import json
 import os
+import time
 from kivy.uix.button import Button
 import oci
+from oci.object_storage.transfer.constants import MEBIBYTE
 
 class Account:
     def __init__(self, name, tenancy_ocid, user_ocid, region, fingerprint, key_location, vm_list):
@@ -99,12 +101,9 @@ class Account:
     def get_availability_domains(self, config_file, compartment_id):
         config = oci.config.from_file(file_location=config_file)
 
-        #Store compartments in array to return
         ad_array = []
-        # Get identity store for region and compartment
         identity_store = oci.identity.identity_client.IdentityClient(config)
 
-        # Select availability domain for compute
         ad_list = identity_store.list_availability_domains(compartment_id=compartment_id).data
         for x in ad_list:
             ad = AvailabilityDomain(x.name)
@@ -114,12 +113,9 @@ class Account:
     def get_vcns(self, config_file, compartment_id):
         config = oci.config.from_file(file_location=config_file)
 
-        #Store compartments in array to return
         vcn_array = []
-        # Get identity store for region and compartment
         vnc_store = oci.core.virtual_network_client.VirtualNetworkClient(config)
 
-        # Select availability domain for compute
         vcn_list = vnc_store.list_vcns(compartment_id=compartment_id).data
         for x in vcn_list:
             vcn = VirtualCloudNetwork(x.id, x.display_name)
@@ -129,12 +125,9 @@ class Account:
     def get_subnets(self, config_file, compartment_id, vcn_id):
         config = oci.config.from_file(file_location=config_file)
 
-        #Store compartments in array to return
         subnet_array = []
-        # Get identity store for region and compartment
         vnc_store = oci.core.virtual_network_client.VirtualNetworkClient(config)
 
-        # Select availability domain for compute
         subnet_list = vnc_store.list_subnets(compartment_id=compartment_id, vcn_id=vcn_id).data
         for x in subnet_list:
             subnet = Subnet(x.id, x.display_name)
@@ -144,17 +137,113 @@ class Account:
     def get_shapes(self, config_file, compartment_id):
         config = oci.config.from_file(file_location=config_file)
 
-        #Store compartments in array to return
         shape_array = []
-        # Get identity store for region and compartment
         compute_store = oci.core.compute_client.ComputeClient(config)
 
-        # Select availability domain for compute
         shape_list = compute_store.list_shapes(compartment_id=compartment_id).data
         for x in shape_list:
             shape = Shape(x.shape)
             shape_array.append(shape)
         return shape_array
+
+
+    def upload_image(self, config_file, bucket_name, file_name, file_path):
+        success = False
+
+        config = oci.config.from_file(file_location=config_file)
+        obj_store = oci.object_storage.ObjectStorageClient(config)
+        namespace = obj_store.get_namespace().data
+        region = self.region
+        part_size = 1000 * MEBIBYTE
+        upload_man = oci.object_storage.UploadManager(obj_store, allow_parallel_uploads=True,
+                                                      parallel_process_count=3)
+        print 'Starting upload to OCI object storage...'
+        try:
+            upload_res = upload_man.upload_file(namespace, bucket_name, file_name,
+                                                file_path, part_size=part_size,
+                                                progress_callback=self.progress_callback)
+            success = True
+        except:
+            print "Error Occurred during image upload"
+
+        return [success, namespace]
+
+    def create_image(self, config_file, namespace, bucket_name, file_name, display_name, image_type, compartment_id):
+
+        region = self.region
+        launch_mode="EMULATED"
+        success = False
+        config = oci.config.from_file(file_location=config_file)
+        compute_store = oci.core.compute_client.ComputeClient(config)
+        source_uri="https://objectstorage.%s.oraclecloud.com/n/%s/b/%s/o/%s" % (region, namespace, bucket_name, file_name)
+
+        print 'Starting image import from object storage...'
+        image_source_details = oci.core.models.ImageSourceViaObjectStorageUriDetails(source_image_type=image_type,
+                                                                                     source_type="objectStorageUri",
+                                                                                     source_uri=source_uri)
+        create_image_details = oci.core.models.CreateImageDetails(compartment_id=compartment_id,
+                                                                  display_name=display_name,
+                                                                  image_source_details=image_source_details,
+                                                                  launch_mode=launch_mode)
+        create_image_res = compute_store.create_image(create_image_details=create_image_details)
+        image_id=create_image_res.data.id
+        image_status = compute_store.get_image(image_id=image_id).data.lifecycle_state
+        while image_status != "AVAILABLE":
+            if image_status != "IMPORTING":
+                print "Error occured while importing custom image"
+                return [success, image_id]
+            print "importing"
+            time.sleep(20)
+            image_status = compute_store.get_image(image_id=image_id).data.lifecycle_state
+        success = True
+
+        return [success, image_id]
+
+    def progress_callback(self, bytes_uploaded):
+
+        print "uploading"
+
+    def provision_vm(self, config_file, subnet_id, ad_name, compartment_id, display_name, image_id, shape):
+
+        success = False
+        config = oci.config.from_file(file_location=config_file)
+        compute_store = oci.core.compute_client.ComputeClient(config)
+        create_vnic_details = oci.core.models.CreateVnicDetails(subnet_id=subnet_id)
+        launch_instance_details = oci.core.models.LaunchInstanceDetails(availability_domain=ad_name,
+                                                                        compartment_id=compartment_id,
+                                                                        create_vnic_details=create_vnic_details,
+                                                                        display_name=display_name,
+                                                                        image_id=image_id,
+                                                                        shape=shape)
+
+        create_vm_res = compute_store.launch_instance(launch_instance_details=launch_instance_details)
+        instance_id = create_vm_res.data.id
+        instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
+        print 'Provisioning instance...'
+        while instance_status != "RUNNING":
+            if instance_status != "PROVISIONING":
+                print 'An error occured while provisioning the server'
+                return [success, instance_id]
+            time.sleep(20)
+            instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
+            print 'Provisioning instance... \r'
+
+        vnic = compute_store.list_vnic_attachments(compartment_id=compartment_id, instance_id=instance_id)
+        vnic_id = res.data[0].vnic_id
+        vcn_store = oci.core.virtual_network_client.VirtualNetworkClient(conf)
+        vnic_instance = vcn.get_vnic(vnic_id=vnic_id)
+        instance_ip = vnic_instance.data.public_ip
+
+        print 'Instance successfully created'
+        print 'Your image is now running in Oracle Cloud Infrastructure'
+        print 'Public IP: %s' % instance_ip
+
+        success = True
+        return [success, instance_id, instance_ip]
+
+    def get_instance_status(self, instance_id, compartment_id):
+        instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
+        return instance_status
 
 class Bucket:
     def __init__(self, name):
