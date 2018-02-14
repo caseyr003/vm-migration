@@ -228,10 +228,10 @@ class Account:
             instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
             print 'Provisioning instance... \r'
 
-        vnic = compute_store.list_vnic_attachments(compartment_id=compartment_id, instance_id=instance_id)
-        vnic_id = res.data[0].vnic_id
-        vcn_store = oci.core.virtual_network_client.VirtualNetworkClient(conf)
-        vnic_instance = vcn.get_vnic(vnic_id=vnic_id)
+        vnic_res = compute_store.list_vnic_attachments(compartment_id=compartment_id, instance_id=instance_id)
+        vnic_id = vnic_res.data[0].vnic_id
+        vcn_store = oci.core.virtual_network_client.VirtualNetworkClient(config)
+        vnic_instance = vcn_store.get_vnic(vnic_id=vnic_id)
         instance_ip = vnic_instance.data.public_ip
 
         print 'Instance successfully created'

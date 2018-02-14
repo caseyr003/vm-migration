@@ -251,6 +251,7 @@ class AddVMScreen(Screen):
             image_id = image[1]
         else:
             print "Error creating image"
+            return
 
         data_file = App.get_running_app().data_file
         index = App.get_running_app().current_index
@@ -279,6 +280,7 @@ class AddVMScreen(Screen):
             image_id = image[1]
         else:
             print "Error creating image"
+            return
 
 
         ad_name = self.selected_availability_domain.name
@@ -286,11 +288,14 @@ class AddVMScreen(Screen):
         subnet_id = self.selected_subnet.id
         vm = self.account.provision_vm(config_file, subnet_id, ad_name, compartment_id,
                                        display_name, image_id, shape)
-
+        if vm[0]:
+            instance_id = vm[1]
+            instance_ip = vm[2]
+        else:
+            print "Error provisioning vm"
+            return
         data_file = App.get_running_app().data_file
         index = App.get_running_app().current_index
-        instance_id = vm[1]
-        instance_ip = vm[2]
 
         self.account.add_vm(data_file, index, display_name, instance_id, instance_ip)
         self.dismiss_load()
@@ -459,6 +464,12 @@ class MigrationApp(App):
         self.root.current = self.image_screen.name
 
     def cancel_vm(self):
+        self.clear_vm_options()
+        view = VMScreen()
+        self.transition.direction = 'right'
+        self.root.current = view.name
+
+    def clear_vm_options(self):
         self.clear_compartment_dropdown()
         self.clear_bucket_dropdown()
         self.clear_ad_dropdown()
@@ -466,9 +477,6 @@ class MigrationApp(App):
         self.clear_vcn_dropdown()
         self.clear_subnet_dropdown()
         self.clear_image_chooser()
-        view = VMScreen()
-        self.transition.direction = 'right'
-        self.root.current = view.name
 
     def clear_image_chooser(self):
         self.image_screen.image_chooser.file_btn.text = 'Choose File'
