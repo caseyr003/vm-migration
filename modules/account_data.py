@@ -185,18 +185,22 @@ class Account:
                                                                   display_name=display_name,
                                                                   image_source_details=image_source_details,
                                                                   launch_mode=launch_mode)
-        create_image_res = compute_store.create_image(create_image_details=create_image_details)
-        image_id=create_image_res.data.id
-        image_status = compute_store.get_image(image_id=image_id).data.lifecycle_state
-        while image_status != "AVAILABLE":
-            if image_status != "IMPORTING":
-                print "Error occured while importing custom image"
-                return [success, image_id]
-            print "importing"
-            time.sleep(20)
+        try:
+            create_image_res = compute_store.create_image(create_image_details=create_image_details)
+            image_id=create_image_res.data.id
             image_status = compute_store.get_image(image_id=image_id).data.lifecycle_state
-        success = True
+            while image_status != "AVAILABLE":
+                if image_status != "IMPORTING":
+                    print "Error occured while importing custom image"
+                    return [success, image_id]
+                time.sleep(20)
+                image_status = compute_store.get_image(image_id=image_id).data.lifecycle_state
+                print image_status
+        except:
+            print "Error importing image."
+            return [success, "failed"]
 
+        success = True
         return [success, image_id]
 
     def progress_callback(self, bytes_uploaded):
@@ -215,23 +219,31 @@ class Account:
                                                                         image_id=image_id,
                                                                         shape=shape)
 
-        create_vm_res = compute_store.launch_instance(launch_instance_details=launch_instance_details)
-        instance_id = create_vm_res.data.id
-        instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
-        print 'Provisioning instance...'
-        while instance_status != "RUNNING":
-            if instance_status != "PROVISIONING":
-                print 'An error occured while provisioning the server'
-                return [success, instance_id]
-            time.sleep(20)
+        try:
+            create_vm_res = compute_store.launch_instance(launch_instance_details=launch_instance_details)
+            instance_id = create_vm_res.data.id
             instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
-            print 'Provisioning instance... \r'
+            print 'Provisioning instance...'
+            while instance_status != "RUNNING":
+                if instance_status != "PROVISIONING":
+                    print 'An error occured while provisioning the server'
+                    return [success, instance_id]
+                time.sleep(20)
+                instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
+                print 'Provisioning instance... \r'
+        except:
+            print "Failed during image provisioning"
+            return [success, "failed"]
 
-        vnic_res = compute_store.list_vnic_attachments(compartment_id=compartment_id, instance_id=instance_id)
-        vnic_id = vnic_res.data[0].vnic_id
-        vcn_store = oci.core.virtual_network_client.VirtualNetworkClient(config)
-        vnic_instance = vcn_store.get_vnic(vnic_id=vnic_id)
-        instance_ip = vnic_instance.data.public_ip
+        try:
+            vnic_res = compute_store.list_vnic_attachments(compartment_id=compartment_id, instance_id=instance_id)
+            vnic_id = vnic_res.data[0].vnic_id
+            vcn_store = oci.core.virtual_network_client.VirtualNetworkClient(config)
+            vnic_instance = vcn_store.get_vnic(vnic_id=vnic_id)
+            instance_ip = vnic_instance.data.public_ip
+        except:
+            print "Failed to get IP for instance"
+            return [success, "failed"]
 
         print 'Instance successfully created'
         print 'Your image is now running in Oracle Cloud Infrastructure'
