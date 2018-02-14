@@ -1,10 +1,7 @@
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.dropdown import DropDown
-from kivy.uix.button import Button
-from kivy.properties import ListProperty, StringProperty, \
-        NumericProperty, BooleanProperty, ObjectProperty
-from kivy.clock import Clock
-from account_data import *
+from kivy.properties import ObjectProperty
+
 
 class BucketDropdown(BoxLayout):
         bucket_box = ObjectProperty(None)
@@ -45,6 +42,7 @@ class CompartmentDropdown(BoxLayout):
             self.compartment_button.disabled = False
             # self.parent.parent.parent.dismiss_popup()
 
+
 class AvailabilityDomainDropdown(BoxLayout):
         availability_domain_box = ObjectProperty(None)
         availability_domain_dropdown = DropDown()
@@ -62,6 +60,7 @@ class AvailabilityDomainDropdown(BoxLayout):
             self.availability_domain_dropdown.bind(on_select=lambda instance, x: setattr(self.availability_domain_button, 'text', x.name))
             self.availability_domain_dropdown.bind(on_select=lambda instance, x: self.parent.parent.parent.get_availability_domain(x))
             self.availability_domain_button.disabled = False
+
 
 class VirtualCloudNetworkDropdown(BoxLayout):
         vcn_box = ObjectProperty(None)
@@ -81,6 +80,7 @@ class VirtualCloudNetworkDropdown(BoxLayout):
             self.vcn_dropdown.bind(on_select=lambda instance, x: self.parent.parent.parent.get_vcn(x))
             self.vcn_button.disabled = False
 
+
 class SubnetDropdown(BoxLayout):
         subnet_box = ObjectProperty(None)
         subnet_dropdown = DropDown()
@@ -98,6 +98,7 @@ class SubnetDropdown(BoxLayout):
             self.subnet_dropdown.bind(on_select=lambda instance, x: setattr(self.subnet_button, 'text', x.name))
             self.subnet_dropdown.bind(on_select=lambda instance, x: self.parent.parent.parent.get_subnet(x))
             self.subnet_button.disabled = False
+
 
 class ShapeDropdown(BoxLayout):
         shape_box = ObjectProperty(None)

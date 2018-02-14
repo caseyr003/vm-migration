@@ -5,6 +5,7 @@ from kivy.uix.button import Button
 import oci
 from oci.object_storage.transfer.constants import MEBIBYTE
 
+
 class Account:
     def __init__(self, name, tenancy_ocid, user_ocid, region, fingerprint, key_location, vm_list):
         self.name = name
@@ -50,7 +51,6 @@ class Account:
         config.write('tenancy=%s\n' % self.tenancy_ocid)
         config.write('region=%s\n' % self.region)
         config.close()
-
 
     def is_active(self, config_file):
         self.config_account(config_file)
@@ -200,7 +200,6 @@ class Account:
         return [success, image_id]
 
     def progress_callback(self, bytes_uploaded):
-
         print "uploading"
 
     def provision_vm(self, config_file, subnet_id, ad_name, compartment_id, display_name, image_id, shape):
@@ -242,8 +241,9 @@ class Account:
         return [success, instance_id, instance_ip]
 
     def get_instance_status(self, instance_id, compartment_id):
-        instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
-        return instance_status
+        # instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
+        # return instance_status
+        pass
 
     def add_vm(self, data_file, index, name, ocid, ip):
         new_vm = {

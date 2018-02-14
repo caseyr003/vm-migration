@@ -1,4 +1,4 @@
-from loading_popups import *
-from account_data import *
-from dropdowns import *
-from filechoosers import *
+import account_data
+import dropdowns
+import filechoosers
+import loading_popups
