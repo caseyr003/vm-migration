@@ -1,10 +1,12 @@
-# filechoosers.py
 import os
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import StringProperty, ObjectProperty
+from kivy.properties import StringProperty
 from kivy.uix.popup import Popup
 from loading_popups import *
 from kivy.uix.button import Button
+
+
+# filechoosers.py
 
 # Widget to select which image file the user wants to upload
 class ImageFileChooser(BoxLayout):
@@ -51,7 +53,6 @@ class ImageFileChooser(BoxLayout):
             self._popup.content.popup_label.text = "Please choose VMDK or QCOW2 file"
             self._popup.open()
             return
-
 
 
 # Widget to select location of private key for account

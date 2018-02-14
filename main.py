@@ -1,39 +1,26 @@
-'''
+"""
 Oracle VM Migration
 =====
 
 Application to move local images in VMDK or QCOW2 format to OCI VM
 
-'''
-
-__version__ = '0.1'
-
-
+"""
 import json
 import os
-from os.path import join, exists
-import kivy
-kivy.require("1.10.0")
-from kivy.core.window import Window
-from kivy.config import Config
-from kivy.app import App
-from kivy.lang import Builder
-from kivy.uix.screenmanager import *
+from os.path import join
+
+from kivy.properties import NumericProperty, ListProperty, BooleanProperty, Clock, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.dropdown import DropDown
 from kivy.uix.button import Button
-from kivy.properties import ListProperty, StringProperty, \
-        NumericProperty, BooleanProperty, ObjectProperty
-from kivy.uix.floatlayout import FloatLayout
-from kivy.clock import Clock
-from kivy.uix.spinner import Spinner
 from kivy.uix.popup import Popup
-from kivy.graphics import *
-import oci
-from functools import partial
-import threading
-from multiprocessing import Process
-from modules import *
+from kivy.uix.screenmanager import Screen, ScreenManager, SlideTransition
+from kivy.app import App
+
+from modules.account_data import Account
+from modules.loading_popups import LoadingPopup
+
+
+__version__ = '0.1'
 
 
 class AddAccountScreen(Screen):
@@ -106,6 +93,7 @@ class AddAccountScreen(Screen):
         self.clear_input()
         self.parent.transition.direction = 'right'
         self.parent.current = Accounts().name
+
 
 class VMListItem(BoxLayout):
     vm_index = NumericProperty()
@@ -187,6 +175,7 @@ class AddImageScreen(Screen):
         App.get_running_app().load_vm_options(self.account, self.selected_compartment,
                                               self.selected_bucket, self.image_file_path,
                                               self.custom_image_name.text, self.image_type)
+
 
 class AddVMScreen(Screen):
     launch_vm_switch = ObjectProperty(None)
@@ -326,8 +315,10 @@ class AddVMScreen(Screen):
                             size_hint=(0.8, 0.4))
         self._popup.open()
 
+
 class ScreenManagement(ScreenManager):
     pass
+
 
 class AccountListItem(BoxLayout):
     account_index = NumericProperty()
@@ -345,6 +336,7 @@ class AccountListItem(BoxLayout):
     def account_details(self):
         App.get_running_app().load_account(self.account_index)
 
+
 class Accounts(Screen):
     data = ListProperty()
     account_listview = ObjectProperty()
@@ -358,6 +350,7 @@ class Accounts(Screen):
             'account_region': item.region,
             'account_fingerprint': item.fingerprint,
             'account_key': item.key_location}
+
 
 class MigrationApp(App):
     def build(self):
@@ -379,6 +372,7 @@ class MigrationApp(App):
         return root
 
     def load_data(self):
+        #todo: make data file
         if os.stat(self.data_file).st_size == 0:
             return
 
@@ -522,6 +516,7 @@ class MigrationApp(App):
     @property
     def config_file(self):
         return join(self.user_data_dir, 'config')
+
 
 if __name__ == '__main__':
     MigrationApp().run()

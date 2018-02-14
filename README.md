@@ -9,8 +9,9 @@ virtual machines (VMDK or QCOW2 files) to Oracle Cloud Infrastructure.
 
 * [Python](https://www.python.org/)
 * [Kivy](https://kivy.org/)
+* [Oracle]()
 
-## Prerequisites
+## Prerequisite
 
 You will need an Oracle Cloud Infrastructure Acount.
 
@@ -19,6 +20,12 @@ You will need the following things properly installed on your computer:
 * [Git](http://git-scm.com/)
 * [Python](https://www.python.org/)
 * [Kivy](https://kivy.org/)
+
+
+For Ubuntu 
+As well as python-pygame && python-kivy && python-dev tools && libgl1-mesa-dev
+
+https://stackoverflow.com/questions/21530577/fatal-error-python-h-no-such-file-or-directory
 
 ## Installation
 
