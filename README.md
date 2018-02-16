@@ -23,9 +23,11 @@ You will need the following things properly installed on your computer:
 
 
 For Ubuntu 
-As well as python-pygame && python-kivy && python-dev tools && libgl1-mesa-dev
 
+https://kivy.org/docs/installation/installation-linux.html
 https://stackoverflow.com/questions/21530577/fatal-error-python-h-no-such-file-or-directory
+
+You might also need libgl1-mesa-dev
 
 ## Installation
 
