@@ -371,19 +371,27 @@ class MigrationApp(App):
         self.load_data()
         return root
 
-    def load_data(self):
-        #todo: make data file
-        if os.stat(self.data_file).st_size == 0:
-            return
+    def check_file(self):
+        file_exists = True
 
-        with open(self.data_file) as data_file:
-            data = json.load(data_file)
-            account_list = []
-            for index, x in enumerate(data["accounts"]):
-                account = Account(x["name"], x["tenancy_ocid"], x["user_ocid"], x["region"],
-                                  x["fingerprint"], x["key_location"], x["vms"])
-                account_list.append(account)
-            self.accounts.data = account_list
+        try:
+            file_exists = os.stat(self.data_file).st_size != 0
+        except Exception:
+            check = open(join(self.user_data_dir, 'data.json'), 'w')
+            check.close()
+            return not file_exists
+        return file_exists
+
+    def load_data(self):
+        if self.check_file():
+            with open(self.data_file) as data_file:
+                data = json.load(data_file)
+                account_list = []
+                for index, x in enumerate(data["accounts"]):
+                    account = Account(x["name"], x["tenancy_ocid"], x["user_ocid"], x["region"],
+                                      x["fingerprint"], x["key_location"], x["vms"])
+                    account_list.append(account)
+                self.accounts.data = account_list
 
     def load_account(self, index):
         self.account.account = self.accounts.data[index]
