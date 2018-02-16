@@ -9,7 +9,7 @@ virtual machines (VMDK or QCOW2 files) to Oracle Cloud Infrastructure.
 
 * [Python](https://www.python.org/)
 * [Kivy](https://kivy.org/)
-* [Oracle](https://github.com/oracle/oci-python-sdk)
+* [Oracle](https://cloud.oracle.com/cloud-infrastructure)
 
 ## Prerequisite
 
