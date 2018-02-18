@@ -8,6 +8,8 @@ Application to move local images in VMDK or QCOW2 format to OCI VM
 import json
 import os
 from os.path import join
+from threading import Thread
+from time import sleep
 
 from kivy.properties import NumericProperty, ListProperty, BooleanProperty, Clock, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
@@ -41,7 +43,7 @@ class AddAccountScreen(Screen):
     def show_load(self):
         content = LoadingPopup()
         self._popup = Popup(title="Oracle Cloud Infrastructure VM Migration", content=content,
-                            size_hint=(0.8, 0.4))
+                            size_hint=(0.8, 0.4), auto_dismiss=False)
         self._popup.open()
 
     def cancel(self):
@@ -100,6 +102,7 @@ class VMListItem(BoxLayout):
     vm_name = StringProperty()
     vm_ocid = StringProperty()
     vm_ip = StringProperty()
+    vm_status = StringProperty()
 
     def __init__(self, **kwargs):
         print kwargs
@@ -116,7 +119,8 @@ class VMScreen(Screen):
             'vm_index': row_index,
             'vm_name': item['name'],
             'vm_ocid': item['ocid'],
-            'vm_ip': item['ip']}
+            'vm_ip': item['ip'],
+            'vm_status': item['status']}
 
     def add_vm(self):
         App.get_running_app().load_image_options()
@@ -213,26 +217,37 @@ class AddVMScreen(Screen):
 
     def launch(self):
         self.show_load()
+        index = App.get_running_app().current_index
         if self.launch_vm_switch.active:
-            self.launch_vm()
+            Thread(target=self.launch_vm).start()
+            # self.launch_vm()
         else:
-            self.launch_image()
+            Thread(target=self.launch_image).start()
+            # self.launch_image()
+        self.dismiss_load()
+        App.get_running_app().reload_account(index)
+
 
     def launch_image(self):
         config_file = App.get_running_app().config_file
         bucket_name = self.selected_bucket.name
         file_name = self.image_name
         file_path = self.image_file_path
+        display_name = file_name
+        image_type = self.image_type
+        compartment_id = self.selected_compartment.id
+        data_file = App.get_running_app().data_file
+        index = App.get_running_app().current_index
+
         upload = self.account.upload_image(config_file, bucket_name, file_name, file_path)
         if upload[0]:
             namespace = upload[1]
         else:
             print "Error uploading"
+            App.get_running_app().show_load()
+            App.get_running_app().show_error("Error Uploading")
             return
 
-        display_name = file_name
-        image_type = self.image_type
-        compartment_id = self.selected_compartment.id
         image = self.account.create_image(config_file, namespace, bucket_name, file_name,
                                           display_name, image_type, compartment_id)
         if image[0]:
@@ -240,12 +255,11 @@ class AddVMScreen(Screen):
             image_id = image[1]
         else:
             print "Error creating image"
+            App.get_running_app().show_load()
+            App.get_running_app().show_error("Error Creating Custom Image")
             return
 
-        data_file = App.get_running_app().data_file
-        index = App.get_running_app().current_index
         self.account.add_vm(data_file, index, file_name, image_id, "n/a")
-        self.dismiss_load()
         App.get_running_app().reload_account(index)
 
     def launch_vm(self):
@@ -253,28 +267,34 @@ class AddVMScreen(Screen):
         bucket_name = self.selected_bucket.name
         file_name = self.image_name
         file_path = self.image_file_path
+        display_name = file_name
+        image_type = self.image_type
+        compartment_id = self.selected_compartment.id
+        ad_name = self.selected_availability_domain.name
+        shape = self.selected_shape.name
+        subnet_id = self.selected_subnet.id
+        data_file = App.get_running_app().data_file
+        index = App.get_running_app().current_index
+
         upload = self.account.upload_image(config_file, bucket_name, file_name, file_path)
         if upload[0]:
             namespace = upload[1]
         else:
             print "Error uploading"
+            App.get_running_app().show_load()
+            App.get_running_app().show_error("Error Uploading")
             return
 
-        display_name = file_name
-        image_type = self.image_type
-        compartment_id = self.selected_compartment.id
         image = self.account.create_image(config_file, namespace, bucket_name, file_name,
                                           display_name, image_type, compartment_id)
         if image[0]:
             image_id = image[1]
         else:
             print "Error creating image"
+            App.get_running_app().show_load()
+            App.get_running_app().show_error("Error Creating Custom Image")
             return
 
-
-        ad_name = self.selected_availability_domain.name
-        shape = self.selected_shape.name
-        subnet_id = self.selected_subnet.id
         vm = self.account.provision_vm(config_file, subnet_id, ad_name, compartment_id,
                                        display_name, image_id, shape)
         if vm[0]:
@@ -282,12 +302,11 @@ class AddVMScreen(Screen):
             instance_ip = vm[2]
         else:
             print "Error provisioning vm"
+            App.get_running_app().show_load()
+            App.get_running_app().show_error("Error Provisioning VM")
             return
-        data_file = App.get_running_app().data_file
-        index = App.get_running_app().current_index
 
         self.account.add_vm(data_file, index, display_name, instance_id, instance_ip)
-        self.dismiss_load()
         App.get_running_app().reload_account(index)
 
     def get_availability_domain(self, ad):
@@ -317,7 +336,7 @@ class AddVMScreen(Screen):
     def show_load(self):
         content = LoadingPopup()
         self._popup = Popup(title="Oracle Cloud Infrastructure VM Migration", content=content,
-                            size_hint=(0.8, 0.4))
+                            size_hint=(0.8, 0.4), auto_dismiss=False)
         self._popup.open()
 
 
@@ -339,8 +358,9 @@ class AccountListItem(BoxLayout):
         super(AccountListItem, self).__init__(**kwargs)
 
     def account_details(self):
+        # App.get_running_app().show_load()
+        # Thread(target=App.get_running_app().load_account(self.account_index)).start()
         App.get_running_app().load_account(self.account_index)
-
 
 class Accounts(Screen):
     data = ListProperty()
@@ -376,6 +396,20 @@ class MigrationApp(App):
         self.load_data()
         return root
 
+    def dismiss_popup(self):
+        self._popup.dismiss()
+
+    def show_load(self):
+        content = LoadingPopup()
+        self._popup = Popup(title="Oracle Cloud Infrastructure VM Migration", content=content,
+                            size_hint=(0.8, 0.4), auto_dismiss=False)
+        self._popup.open()
+
+    def show_error(self, error):
+        btn = Button(text="Okay", size_hint_y=None, height=40, on_release=lambda btn: self.dismiss_popup())
+        self._popup.content.popup_container.add_widget(btn)
+        self._popup.content.popup_label.text = error
+
     def load_data(self):
         #todo: make data file
         if os.stat(self.data_file).st_size == 0:
@@ -390,17 +424,22 @@ class MigrationApp(App):
                 account_list.append(account)
             self.accounts.data = account_list
 
-    def load_account(self, index):
+    def get_account(self):
+        index = self.current_index
         self.account.account = self.accounts.data[index]
-        self.current_index = index
         if self.account.account.is_active(self.config_file):
             self.account.account_title.text = self.accounts.data[index].name
             self.account.data = self.accounts.data[index].vm_list
+            self.dismiss_popup()
             self.transition.direction = 'left'
             self.root.current = self.account.name
         else:
-            print "Account Error"
-            return
+            self.show_error("Error Loading Account")
+
+    def load_account(self, index):
+        self.show_load()
+        self.current_index = index
+        Thread(target=self.get_account).start()
 
     def reload_account(self, index):
         self.load_data()
