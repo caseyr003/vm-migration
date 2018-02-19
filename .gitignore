@@ -4,3 +4,6 @@
 venv/
 Processes/
 test.py
+migration_tool.spec
+dist/
+build/

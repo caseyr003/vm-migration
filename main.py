@@ -9,7 +9,6 @@ import json
 import os
 from os.path import join
 from threading import Thread
-from time import sleep
 
 from kivy.properties import NumericProperty, ListProperty, BooleanProperty, Clock, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
@@ -37,15 +36,6 @@ class AddAccountScreen(Screen):
     def __init__(self, *args, **kwargs):
         super(AddAccountScreen, self).__init__(*args, **kwargs)
 
-    def dismiss_popup(self):
-        self._popup.dismiss()
-
-    def show_load(self):
-        content = LoadingPopup()
-        self._popup = Popup(title="Oracle Cloud Infrastructure VM Migration", content=content,
-                            size_hint=(0.8, 0.4), auto_dismiss=False)
-        self._popup.open()
-
     def cancel(self):
         self.clear_input()
         self.parent.transition.direction = 'right'
@@ -61,8 +51,10 @@ class AddAccountScreen(Screen):
         self.key_chooser.file_btn.text = 'Choose File'
 
     def save_account(self):
-        self.show_load()
+        App.get_running_app().show_load()
+        Thread(target=self.save_account_thread).start()
 
+    def save_account_thread(self):
         name = self.display_name_input.text
         tenancy_ocid = self.tenancy_ocid_input.text
         user_ocid = self.user_ocid_input.text
@@ -72,9 +64,7 @@ class AddAccountScreen(Screen):
 
         if (name == '' or tenancy_ocid == '' or user_ocid == '' or region == ''
             or fingerprint == '' or key_location == None):
-            btn = Button(text="Okay", size_hint_y=None, height=40, on_release=lambda btn: self.dismiss_popup())
-            self._popup.content.popup_container.add_widget(btn)
-            self._popup.content.popup_label.text = "Error: Missing Fields"
+            App.get_running_app().show_error("Error: Missing Fields")
             return
 
         config_file = App.get_running_app().config_file
@@ -85,14 +75,12 @@ class AddAccountScreen(Screen):
         if new_account.is_active(config_file):
             new_account.save_account(data_file)
         else:
-            btn = Button(text="Okay", size_hint_y=None, height=40, on_release=lambda btn: self.dismiss_popup())
-            self._popup.content.popup_container.add_widget(btn)
-            self._popup.content.popup_label.text = "Error Connecting to OCI Account"
+            App.get_running_app().show_error("Error Connecting to OCI Account")
             return
 
         App.get_running_app().load_data()
-        self.dismiss_popup()
         self.clear_input()
+        App.get_running_app().dismiss_popup()
         self.parent.transition.direction = 'right'
         self.parent.current = Accounts().name
 
@@ -143,8 +131,12 @@ class AddImageScreen(Screen):
         super(AddImageScreen, self).__init__(*args, **kwargs)
 
     def get_compartment(self, compartment):
-        self.show_load()
+        App.get_running_app().show_load()
         self.selected_compartment = compartment
+        Thread(target=self.get_bucket_list).start()
+
+    def get_bucket_list(self):
+        compartment = self.selected_compartment
         config_file = App.get_running_app().config_file
         self.bucket_dropdown.bucket_dropdown.clear_widgets()
         self.bucket_dropdown.bucket_button.text = '-'
@@ -153,24 +145,14 @@ class AddImageScreen(Screen):
         if bucket_res[1]:
             self.bucket_list = bucket_res[0]
             self.bucket_dropdown.create_bucket_dropdown(self.bucket_list)
-            self.dismiss_popup()
+            App.get_running_app().dismiss_popup()
         else:
-            btn = Button(text="Okay", size_hint_y=None, height=40, on_release=lambda btn: self.dismiss_popup())
-            self._popup.content.popup_container.add_widget(btn)
-            self._popup.content.popup_label.text = "Compartment is Unavailable"
             self.bucket_dropdown.bucket_button.text = '-'
             self.bucket_dropdown.bucket_button.disabled = True
             self.bucket_dropdown.bucket_dropdown.clear_widgets()
-            return
-
-    def dismiss_popup(self):
-        self._popup.dismiss()
-
-    def show_load(self):
-        content = LoadingPopup()
-        self._popup = Popup(title="Oracle Cloud Infrastructure VM Migration", content=content,
-                            size_hint=(0.8, 0.4))
-        self._popup.open()
+            App.get_running_app().dismiss_popup()
+            App.get_running_app().show_load()
+            App.get_running_app().show_error("Compartment is Unavailable")
 
     def get_bucket(self, bucket):
         self.selected_bucket = bucket
@@ -216,15 +198,24 @@ class AddVMScreen(Screen):
         self.launch_with_vm = x
 
     def launch(self):
-        self.show_load()
+        App.get_running_app().show_load()
         index = App.get_running_app().current_index
-        if self.launch_vm_switch.active:
+        can_launch_image = not (self.selected_compartment == None or self.selected_bucket == None or
+                                self.image_name == '' or self.image_file_path == '' or self.image_type == '')
+        can_launch_vm = not (self.selected_availability_domain == None or self.selected_subnet == None or
+                             self.selected_shape == None or self.selected_vcn == None)
+
+        if (self.launch_vm_switch.active and can_launch_image and can_launch_vm):
             Thread(target=self.launch_vm).start()
-            # self.launch_vm()
-        else:
+        elif ((not self.launch_vm_switch.active) and can_launch_image):
             Thread(target=self.launch_image).start()
-            # self.launch_image()
-        self.dismiss_load()
+        else:
+            App.get_running_app().dismiss_popup()
+            App.get_running_app().show_load()
+            App.get_running_app().show_error("Error: Missing Fields")
+            return
+
+        App.get_running_app().dismiss_popup()
         App.get_running_app().reload_account(index)
 
 
@@ -239,11 +230,18 @@ class AddVMScreen(Screen):
         data_file = App.get_running_app().data_file
         index = App.get_running_app().current_index
 
+        vm_index = self.account.add_vm(data_file, index, file_name, "", "", "Uploading")
+        App.get_running_app().load_data()
+
         upload = self.account.upload_image(config_file, bucket_name, file_name, file_path)
         if upload[0]:
             namespace = upload[1]
+            self.account.update_vm_status(data_file, index, "Importing", vm_index)
+            App.get_running_app().load_data()
         else:
             print "Error uploading"
+            self.account.update_vm_status(data_file, index, "Failed on Upload", vm_index)
+            App.get_running_app().load_data()
             App.get_running_app().show_load()
             App.get_running_app().show_error("Error Uploading")
             return
@@ -255,12 +253,15 @@ class AddVMScreen(Screen):
             image_id = image[1]
         else:
             print "Error creating image"
+            self.account.update_vm_status(data_file, index, "Failed Creating Custom Image", vm_index)
+            App.get_running_app().load_data()
             App.get_running_app().show_load()
             App.get_running_app().show_error("Error Creating Custom Image")
             return
 
-        self.account.add_vm(data_file, index, file_name, image_id, "n/a")
-        App.get_running_app().reload_account(index)
+        self.account.update_vm(data_file, index, "None", "None", "Custom Image Imported", vm_index)
+        App.get_running_app().load_data()
+        # App.get_running_app().reload_account(index)
 
     def launch_vm(self):
         config_file = App.get_running_app().config_file
@@ -276,11 +277,18 @@ class AddVMScreen(Screen):
         data_file = App.get_running_app().data_file
         index = App.get_running_app().current_index
 
+        vm_index = self.account.add_vm(data_file, index, file_name, "", "", "Uploading")
+        App.get_running_app().load_data()
+
         upload = self.account.upload_image(config_file, bucket_name, file_name, file_path)
         if upload[0]:
             namespace = upload[1]
+            self.account.update_vm_status(data_file, index, "Importing", vm_index)
+            App.get_running_app().load_data()
         else:
             print "Error uploading"
+            self.account.update_vm_status(data_file, index, "Failed on Upload", vm_index)
+            App.get_running_app().load_data()
             App.get_running_app().show_load()
             App.get_running_app().show_error("Error Uploading")
             return
@@ -289,8 +297,11 @@ class AddVMScreen(Screen):
                                           display_name, image_type, compartment_id)
         if image[0]:
             image_id = image[1]
+            self.account.update_vm_status(data_file, index, "Provisioning", vm_index)
+            App.get_running_app().load_data()
         else:
             print "Error creating image"
+            self.account.update_vm_status(data_file, index, "Failed Creating Custom Image", vm_index)
             App.get_running_app().show_load()
             App.get_running_app().show_error("Error Creating Custom Image")
             return
@@ -302,12 +313,16 @@ class AddVMScreen(Screen):
             instance_ip = vm[2]
         else:
             print "Error provisioning vm"
+            self.account.update_vm_status(data_file, index, "Failed Provisioning Virtual Machine", vm_index)
+            App.get_running_app().load_data()
             App.get_running_app().show_load()
             App.get_running_app().show_error("Error Provisioning VM")
             return
 
         self.account.add_vm(data_file, index, display_name, instance_id, instance_ip)
-        App.get_running_app().reload_account(index)
+        self.account.update_vm(data_file, index, instance_id, instance_ip, "Running", vm_index)
+        App.get_running_app().load_data()
+        # App.get_running_app().reload_account(index)
 
     def get_availability_domain(self, ad):
         self.selected_availability_domain = ad
@@ -329,15 +344,6 @@ class AddVMScreen(Screen):
 
     def image_complete(self):
         App.get_running_app().cancel_vm()
-
-    def dismiss_load(self):
-        self._popup.dismiss()
-
-    def show_load(self):
-        content = LoadingPopup()
-        self._popup = Popup(title="Oracle Cloud Infrastructure VM Migration", content=content,
-                            size_hint=(0.8, 0.4), auto_dismiss=False)
-        self._popup.open()
 
 
 class ScreenManagement(ScreenManager):
@@ -406,7 +412,7 @@ class MigrationApp(App):
         self._popup.open()
 
     def show_error(self, error):
-        btn = Button(text="Okay", size_hint_y=None, height=40, on_release=lambda btn: self.dismiss_popup())
+        btn = Button(text="Okay", size_hint=[1, 0.25], height=40, on_release=lambda btn: self.dismiss_popup())
         self._popup.content.popup_container.add_widget(btn)
         self._popup.content.popup_label.text = error
 
@@ -462,18 +468,33 @@ class MigrationApp(App):
         self.root.current = self.image_screen.name
 
     def load_vm_options(self, account, compartment, bucket, image_file_path, image_name, image_type):
+        self.show_load()
+
+        if (account == None or compartment == None or bucket == None or image_file_path == '' or
+           image_type == '' or image_name == ''):
+            self.show_error("Error: Missing Fields")
+            return
+
         self.vm_screen.account = account
         self.vm_screen.selected_compartment = compartment
         self.vm_screen.selected_bucket = bucket
         self.vm_screen.image_file_path = image_file_path
         self.vm_screen.image_type = image_type
         self.vm_screen.image_name = image_name
+
+        Thread(target=self.get_vm_options).start()
+
+
+    def get_vm_options(self):
+        compartment = self.vm_screen.selected_compartment
         self.vm_screen.ad_list = self.vm_screen.account.get_availability_domains(self.config_file, compartment.id)
         self.vm_screen.ad_dropdown.create_availability_domain_dropdown(self.vm_screen.ad_list)
         self.vm_screen.vcn_list = self.vm_screen.account.get_vcns(self.config_file, compartment.id)
         self.vm_screen.vcn_dropdown.create_vcn_dropdown(self.vm_screen.vcn_list)
         self.vm_screen.shape_list = self.vm_screen.account.get_shapes(self.config_file, compartment.id)
         self.vm_screen.shape_dropdown.create_shape_dropdown(self.vm_screen.shape_list)
+        self.dismiss_popup()
+        self.transition.direction = 'left'
         self.root.current = self.vm_screen.name
 
     def view_accounts(self):

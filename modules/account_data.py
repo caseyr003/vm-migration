@@ -252,24 +252,52 @@ class Account:
         success = True
         return [success, instance_id, instance_ip]
 
-    def get_instance_status(self, instance_id, compartment_id):
-        # instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
-        # return instance_status
-        pass
+    def get_instance_status(self, instance_id, config_file):
+        config = oci.config.from_file(file_location=config_file)
+        compute_store = oci.core.compute_client.ComputeClient(config)
+        instance_status = compute_store.get_instance(instance_id=instance_id).data.lifecycle_state
+        return instance_status
 
-    def add_vm(self, data_file, index, name, ocid, ip):
+    def add_vm(self, data_file, index, name, ocid, ip, status):
         new_vm = {
             'name': name,
             'ocid': ocid,
-            'ip': ip
+            'ip': ip,
+            'status': status
         }
         with open(data_file, 'r') as read_data:
             data = json.load(read_data)
+
+        vm_index = len(data["accounts"][index]["vms"])
+        print vm_index
 
         data["accounts"][index]["vms"].append(new_vm)
 
         with open(data_file, 'w') as write_data:
             json.dump(data, write_data, indent=2)
+
+        return vm_index
+
+    def update_vm(self, data_file, index, ocid, ip, status, vm_index):
+        with open(data_file, 'r') as read_data:
+            data = json.load(read_data)
+
+        data["accounts"][index]["vms"][vm_index]["ocid"] = ocid
+        data["accounts"][index]["vms"][vm_index]["ip"] = ip
+        data["accounts"][index]["vms"][vm_index]["status"] = status
+
+        with open(data_file, 'w') as write_data:
+            json.dump(data, write_data, indent=2)
+
+    def update_vm_status(self, data_file, index, status, vm_index):
+        with open(data_file, 'r') as read_data:
+            data = json.load(read_data)
+
+        data["accounts"][index]["vms"][vm_index]["status"] = status
+
+        with open(data_file, 'w') as write_data:
+            json.dump(data, write_data, indent=2)
+
 
 
 class Bucket:
@@ -277,7 +305,7 @@ class Bucket:
         self.name = name
 
     def add_btn(self, dropdown):
-        btn = Button(text=str(self.name), size_hint_y=None, height=40, on_release=lambda btn: dropdown.select(self))
+        btn = Button(text=str(self.name), size_hint_y=None, height=100, on_release=lambda btn: dropdown.select(self))
         return btn
 
 class Compartment:
@@ -286,7 +314,7 @@ class Compartment:
         self.name = name
 
     def add_btn(self, dropdown):
-        btn = Button(text=str(self.name), size_hint_y=None, height=40, on_release=lambda btn: dropdown.select(self))
+        btn = Button(text=str(self.name), size_hint_y=None, height=100, on_release=lambda btn: dropdown.select(self))
         return btn
 
 class AvailabilityDomain:
@@ -294,7 +322,7 @@ class AvailabilityDomain:
         self.name = name
 
     def add_btn(self, dropdown):
-        btn = Button(text=str(self.name), size_hint_y=None, height=40, on_release=lambda btn: dropdown.select(self))
+        btn = Button(text=str(self.name), size_hint_y=None, height=100, on_release=lambda btn: dropdown.select(self))
         return btn
 
 class VirtualCloudNetwork:
@@ -303,7 +331,7 @@ class VirtualCloudNetwork:
         self.name = name
 
     def add_btn(self, dropdown):
-        btn = Button(text=str(self.name), size_hint_y=None, height=40, on_release=lambda btn: dropdown.select(self))
+        btn = Button(text=str(self.name), size_hint_y=None, height=100, on_release=lambda btn: dropdown.select(self))
         return btn
 
 class Subnet:
@@ -312,7 +340,7 @@ class Subnet:
         self.name = name
 
     def add_btn(self, dropdown):
-        btn = Button(text=str(self.name), size_hint_y=None, height=40, on_release=lambda btn: dropdown.select(self))
+        btn = Button(text=str(self.name), size_hint_y=None, height=100, on_release=lambda btn: dropdown.select(self))
         return btn
 
 class Shape:
@@ -320,5 +348,5 @@ class Shape:
         self.name = name
 
     def add_btn(self, dropdown):
-        btn = Button(text=str(self.name), size_hint_y=None, height=40, on_release=lambda btn: dropdown.select(self))
+        btn = Button(text=str(self.name), size_hint_y=None, height=100, on_release=lambda btn: dropdown.select(self))
         return btn

@@ -27,7 +27,10 @@ class ImageFileChooser(BoxLayout):
         self._popup.open()
 
     def load(self, path, filename):
-        image_file_path = os.path.join(path, filename[0])
+        try:
+            image_file_path = os.path.join(path, filename[0])
+        except:
+            return
         vmdk_type = image_file_path[-4:]
         qcow2_type = image_file_path[-5:]
 
@@ -48,7 +51,7 @@ class ImageFileChooser(BoxLayout):
             content = LoadingPopup()
             self._popup = Popup(title="Oracle Cloud Infrastructure VM Migration", content=content,
                                 size_hint=(0.8, 0.4))
-            btn = Button(text="Okay", size_hint_y=None, height=40, on_release=lambda btn: self.dismiss_popup())
+            btn = Button(text="Okay", size_hint_y=None, height=100, on_release=lambda btn: self.dismiss_popup())
             self._popup.content.popup_container.add_widget(btn)
             self._popup.content.popup_label.text = "Please choose VMDK or QCOW2 file"
             self._popup.open()
@@ -73,7 +76,10 @@ class KeyFileChooser(BoxLayout):
         self._popup.open()
 
     def load(self, path, filename):
-        key_file_path = os.path.join(path, filename[0])
+        try:
+            key_file_path = os.path.join(path, filename[0])
+        except:
+            return
         self.parent.parent.parent.key_file_path = key_file_path
         self.file_btn.text = key_file_path
         self.dismiss_popup()

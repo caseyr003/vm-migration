@@ -23,6 +23,22 @@ ScreenManagement:
         Rectangle:
             size: self.size
 
+## Nav Bar
+<NavBar@BoxLayout>:
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: '54dp'
+    padding: '8dp'
+
+    Image:
+        source: 'data/logo.png'
+
+    Label:
+        text: ''
+    Label:
+        text: ''
+
+
 
 ## Custom Widgets
 <InputLabel@Label>:
@@ -153,10 +169,10 @@ ScreenManagement:
         orientation: "vertical"
         FileChooserIconView:
             id: filechooser
+            size_hint: [1, 0.92]
 
         BoxLayout:
-            size_hint_y: None
-            height: 30
+            size_hint: [1, 0.08]
             Button:
                 text: "Cancel"
                 on_release: root.cancel()
@@ -188,19 +204,7 @@ ScreenManagement:
     BoxLayout:
         orientation: 'vertical'
         padding: '20dp'
-        BoxLayout:
-            orientation: 'horizontal'
-            size_hint_y: None
-            height: '54dp'
-            padding: '8dp'
-
-            Image:
-                source: 'data/logo.png'
-
-            Label:
-                text: ''
-            Label:
-                text: ''
+        NavBar:
 
             BoxLayout:
 
@@ -313,19 +317,7 @@ ScreenManagement:
     BoxLayout:
         padding: '18dp'
         orientation: 'vertical'
-        BoxLayout:
-            orientation: 'horizontal'
-            size_hint_y: None
-            height: '54dp'
-            padding: '8dp'
-
-            Image:
-                source: 'data/logo.png'
-
-            Label:
-                text: ''
-            Label:
-                text: ''
+        NavBar:
 
             BoxLayout:
 
@@ -450,19 +442,7 @@ ScreenManagement:
     BoxLayout:
         padding: '18dp'
         orientation: 'vertical'
-        BoxLayout:
-            orientation: 'horizontal'
-            size_hint_y: None
-            height: '54dp'
-            padding: '8dp'
-
-            Image:
-                source: 'data/logo.png'
-
-            Label:
-                text: ''
-            Label:
-                text: ''
+        NavBar:
 
             BoxLayout:
 
