@@ -40,7 +40,6 @@ ScreenManagement:
         text: ''
 
 
-
 ## Custom Widgets
 <InputLabel@Label>:
     text_size: self.size
@@ -220,8 +219,9 @@ ScreenManagement:
             size_hint_y: None
             Label:
                 text: 'Oracle Cloud Infrastructure Accounts'
-                font_size: '22dp'
-                color: [.3, .3, .3, 1]
+                bold: True
+                font_size: '28dp'
+                color: [0.02, 0.45, 0.81, 1]
 
         ListView:
             adapter: ListAdapter(data=root.data, cls=Factory.AccountListItem, args_converter=root.args_converter)
@@ -272,6 +272,7 @@ ScreenManagement:
                 on_release: root.account_details()
 
 <VMListItem>:
+    vm_label: vm_label
     height: '140sp'
     size_hint_y: None
     padding: '14sp'
@@ -284,6 +285,7 @@ ScreenManagement:
         orientation: 'vertical'
         padding: [8, 8, 8, 8]
         Label:
+            id: vm_label
             text: root.vm_name
             size_hint: [1, 0.33]
             text_size: self.size
@@ -402,23 +404,31 @@ ScreenManagement:
 
             Label:
                 text: ''
-                size_hint: [0.3, 1]
+                size_hint: [0.2, 1]
 
             BoxLayout:
-                size_hint: [0.45, 1]
+                size_hint: [0.55, 1]
                 BoxLayout:
                     padding: [0, 0, 10, 0]
-                    size_hint: [0.4, 1]
+                    size_hint: [0.25, 1]
                     Button:
                         text: 'Back'
                         width: self.width
                         on_release: app.view_accounts()
                 BoxLayout:
-                    size_hint: [0.6, 1]
+                    padding: [0, 0, 10, 0]
+                    size_hint: [0.25, 1]
+                    Button:
+                        text: 'Refresh'
+                        width: self.width
+                        on_release: root.refresh()
+                BoxLayout:
+                    size_hint: [0.5, 1]
                     Button:
                         text: 'Migrate New VM'
                         width: self.width
                         on_release: root.add_vm()
+
         BoxLayout:
             orientation: 'vertical'
             height: '54dp'
@@ -426,8 +436,9 @@ ScreenManagement:
             Label:
                 id: account_title
                 text: "Tenancy"
-                font_size: '22dp'
-                color: [.3, .3, .3, 1]
+                bold: True
+                font_size: '28dp'
+                color: [0.02, 0.45, 0.81, 1]
 
         ListView:
             adapter: ListAdapter(data=root.data, cls=Factory.VMListItem, args_converter=root.args_converter)

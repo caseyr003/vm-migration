@@ -263,7 +263,9 @@ class Account:
             'name': name,
             'ocid': ocid,
             'ip': ip,
-            'status': status
+            'status': status,
+            'complete': False,
+            'failed': False
         }
         with open(data_file, 'r') as read_data:
             data = json.load(read_data)
@@ -278,22 +280,26 @@ class Account:
 
         return vm_index
 
-    def update_vm(self, data_file, index, ocid, ip, status, vm_index):
+    def update_vm(self, data_file, index, ocid, ip, status, complete, failed, vm_index):
         with open(data_file, 'r') as read_data:
             data = json.load(read_data)
 
         data["accounts"][index]["vms"][vm_index]["ocid"] = ocid
         data["accounts"][index]["vms"][vm_index]["ip"] = ip
         data["accounts"][index]["vms"][vm_index]["status"] = status
+        data["accounts"][index]["vms"][vm_index]["complete"] = complete
+        data["accounts"][index]["vms"][vm_index]["failed"] = failed
 
         with open(data_file, 'w') as write_data:
             json.dump(data, write_data, indent=2)
 
-    def update_vm_status(self, data_file, index, status, vm_index):
+    def update_vm_status(self, data_file, index, status, complete, failed, vm_index):
         with open(data_file, 'r') as read_data:
             data = json.load(read_data)
 
         data["accounts"][index]["vms"][vm_index]["status"] = status
+        data["accounts"][index]["vms"][vm_index]["complete"] = complete
+        data["accounts"][index]["vms"][vm_index]["failed"] = failed
 
         with open(data_file, 'w') as write_data:
             json.dump(data, write_data, indent=2)
