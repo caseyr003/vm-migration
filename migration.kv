@@ -275,17 +275,18 @@ ScreenManagement:
             size_hint: [1, 0.46]
             orientation: 'vertical'
             Label:
+                text: root.account_region
+                text_size: self.size
+                font_size: '20sp'
+                bold: True
+                color: [90/255.0, 90/255.0, 90/255.0, 1]
+            Label:
                 text: root.account_tenancy
                 text_size: self.size
                 color: [90/255.0, 90/255.0, 90/255.0, 1]
 
             Label:
                 text: root.account_user
-                text_size: self.size
-                color: [90/255.0, 90/255.0, 90/255.0, 1]
-
-            Label:
-                text: root.account_region
                 text_size: self.size
                 color: [90/255.0, 90/255.0, 90/255.0, 1]
 
@@ -321,28 +322,32 @@ ScreenManagement:
         size_hint: [1, 0.9]
         padding: ['30dp', '20dp', '30dp', '20dp']
         Label:
-            id: vm_label
             text: root.vm_name
             size_hint: [1, 0.33]
             text_size: self.size
             font_size: '28sp'
             bold: True
-            color: [0/255.0, 168/255.0, 28/255.0, 1]
+            color: [0.02, 0.45, 0.81, 1]
         BoxLayout:
             orientation: 'vertical'
             size_hint: [1, 0.67]
             Label:
-                text: root.vm_ocid
-                text_size: self.size
-                color: [90/255.0, 90/255.0, 90/255.0, 1]
-            Label:
+                id: vm_label
                 text: root.vm_status
                 text_size: self.size
+                font_size: '20sp'
+                bold: True
                 color: [90/255.0, 90/255.0, 90/255.0, 1]
             Label:
                 text: root.vm_ip
                 text_size: self.size
+                bold: True
                 color: [90/255.0, 90/255.0, 90/255.0, 1]
+            Label:
+                text: root.vm_ocid
+                text_size: self.size
+                color: [90/255.0, 90/255.0, 90/255.0, 1]
+
     BoxLayout:
         orientation: 'vertical'
         size_hint: [1, 0.1]
