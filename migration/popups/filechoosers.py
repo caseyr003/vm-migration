@@ -1,9 +1,10 @@
 import os
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import StringProperty
+from kivy.properties import StringProperty, ObjectProperty
 from kivy.uix.popup import Popup
-from loading_popups import *
 from kivy.uix.button import Button
+
+from loading_popups import LoadDialog
 
 
 # filechoosers.py
