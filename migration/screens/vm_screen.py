@@ -6,7 +6,7 @@ Application to move local images in VMDK or QCOW2 format to OCI VM
 
 """
 
-from kivy.properties import ListProperty, ObjectProperty
+from kivy.properties import ListProperty, Clock, ObjectProperty
 from kivy.uix.screenmanager import Screen
 from kivy.app import App
 

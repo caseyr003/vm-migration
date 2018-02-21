@@ -201,6 +201,7 @@ ScreenManagement:
 
 <Accounts>:
     name: 'account'
+    # no_accounts_box: no_accounts_box
     BoxLayout:
         orientation: 'vertical'
         padding: '20dp'
@@ -223,21 +224,45 @@ ScreenManagement:
                 font_size: '28dp'
                 color: [0.02, 0.45, 0.81, 1]
 
+        # BoxLayout:
+        #     id: no_accounts_box
+        #     orientation: 'vertical'
+        #     height: '120dp'
+        #     size_hint_y: None
+        #     padding: '14sp'
+        #     canvas:
+        #         Color:
+        #             rgba: [1,1,1,1]
+        #         Rectangle:
+        #             size: self.size
+        #             pos: self.pos
+        #     Label:
+        #         text: 'No Accounts'
+        #         font_size: '28dp'
+        #         color: [0.2, 0.2, 0.2, 1]
+        #     Label:
+        #         text: 'Please add an Oracle Cloud Infrastructure Account'
+        #         font_size: '20dp'
+        #         color: [0.4, 0.4, 0.4, 1]
+
         ListView:
+
             adapter: ListAdapter(data=root.data, cls=Factory.AccountListItem, args_converter=root.args_converter)
 
 <AccountListItem>:
     height: '200sp'
     size_hint_y: None
-    padding: '14sp'
+    orientation: 'vertical'
     canvas:
         Color:
             rgba: [1,1,1,1]
         Rectangle:
             size: self.size
+            pos: self.pos
     BoxLayout:
         orientation: 'vertical'
-        padding: [20, 10, 10, 20]
+        padding: ['30dp', '20dp', '30dp', '20dp']
+        size_hint: [1, 0.9]
         Label:
             text: root.account_name
             text_size: self.size
@@ -270,20 +295,31 @@ ScreenManagement:
             Button:
                 text: 'Go to Account'
                 on_release: root.account_details()
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint: [1, 0.1]
+        canvas:
+            Color:
+                rgba: [240/255.0, 240/255.0, 240/255.0, 1]
+            Rectangle:
+                size: self.size
+                pos: self.pos
 
 <VMListItem>:
     vm_label: vm_label
     height: '140sp'
     size_hint_y: None
-    padding: '14sp'
+    orientation: 'vertical'
     canvas:
         Color:
             rgba: [1,1,1,1]
         Rectangle:
             size: self.size
+            pos: self.pos
     BoxLayout:
         orientation: 'vertical'
-        padding: [8, 8, 8, 8]
+        size_hint: [1, 0.9]
+        padding: ['30dp', '20dp', '30dp', '20dp']
         Label:
             id: vm_label
             text: root.vm_name
@@ -307,6 +343,15 @@ ScreenManagement:
                 text: root.vm_ip
                 text_size: self.size
                 color: [90/255.0, 90/255.0, 90/255.0, 1]
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint: [1, 0.1]
+        canvas:
+            Color:
+                rgba: [240/255.0, 240/255.0, 240/255.0, 1]
+            Rectangle:
+                size: self.size
+                pos: self.pos
 
 
 <AddAccountScreen>:
@@ -389,7 +434,10 @@ ScreenManagement:
 <VMScreen>:
     name: 'vm'
     account_title: account_title
+    # no_vms_box: no_vms_box
+    # main_layout: main_layout
     BoxLayout:
+        id: main_layout
         orientation: 'vertical'
         padding: '20dp'
         BoxLayout:
@@ -439,6 +487,27 @@ ScreenManagement:
                 bold: True
                 font_size: '28dp'
                 color: [0.02, 0.45, 0.81, 1]
+
+        # BoxLayout:
+        #     id: no_vms_box
+        #     orientation: 'vertical'
+        #     height: '120dp'
+        #     size_hint_y: None
+        #     padding: '14sp'
+        #     canvas:
+        #         Color:
+        #             rgba: [1,1,1,1]
+        #         Rectangle:
+        #             size: self.size
+        #             pos: self.pos
+        #     Label:
+        #         text: 'No Virtual Machines Migrated'
+        #         font_size: '28dp'
+        #         color: [0.2, 0.2, 0.2, 1]
+        #     Label:
+        #         text: 'Click Migrate New VM to Get Started'
+        #         font_size: '20dp'
+        #         color: [0.4, 0.4, 0.4, 1]
 
         ListView:
             adapter: ListAdapter(data=root.data, cls=Factory.VMListItem, args_converter=root.args_converter)
