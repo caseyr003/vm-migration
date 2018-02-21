@@ -10,6 +10,7 @@ import os
 from os.path import join
 from threading import Thread
 
+from kivy.lang import Builder
 from kivy.properties import NumericProperty, ListProperty, BooleanProperty, Clock, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
