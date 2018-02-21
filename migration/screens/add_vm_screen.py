@@ -57,6 +57,7 @@ class AddVMScreen(Screen):
             return
 
         App.get_running_app().dismiss_popup()
+        App.get_running_app().clear_vm_options()
         App.get_running_app().reload_account()
 
 
@@ -71,15 +72,15 @@ class AddVMScreen(Screen):
         data_file = App.get_running_app().data_file
         index = App.get_running_app().current_index
 
-        vm_index = self.account.add_vm(data_file, index, file_name, "", "", "Uploading")
+        vm_index = self.account.add_vm(data_file, index, file_name, "", "", "uploading")
 
         upload = self.account.upload_image(config_file, bucket_name, file_name, file_path)
         if upload[0]:
             namespace = upload[1]
-            self.account.update_vm_status(data_file, index, "Importing", False, False, vm_index)
+            self.account.update_vm_status(data_file, index, "importing", False, False, vm_index)
         else:
             print "Error uploading"
-            self.account.update_vm_status(data_file, index, "Failed on Upload", False, True, vm_index)
+            self.account.update_vm_status(data_file, index, "failed on upload", False, True, vm_index)
             App.get_running_app().show_load()
             App.get_running_app().show_error("Error Uploading")
             return
@@ -91,12 +92,12 @@ class AddVMScreen(Screen):
             image_id = image[1]
         else:
             print "Error creating image"
-            self.account.update_vm_status(data_file, index, "Failed Creating Custom Image", False, True, vm_index)
+            self.account.update_vm_status(data_file, index, "failed creating custom image", False, True, vm_index)
             App.get_running_app().show_load()
             App.get_running_app().show_error("Error Creating Custom Image")
             return
 
-        self.account.update_vm(data_file, index, "", "", "Custom Image Imported", True, False, vm_index)
+        self.account.update_vm(data_file, index, "", "", "custom image imported", True, False, vm_index)
 
     def launch_vm(self):
         config_file = App.get_running_app().config_file
@@ -112,15 +113,15 @@ class AddVMScreen(Screen):
         data_file = App.get_running_app().data_file
         index = App.get_running_app().current_index
 
-        vm_index = self.account.add_vm(data_file, index, file_name, "", "", "Uploading")
+        vm_index = self.account.add_vm(data_file, index, file_name, "", "", "uploading")
 
         upload = self.account.upload_image(config_file, bucket_name, file_name, file_path)
         if upload[0]:
             namespace = upload[1]
-            self.account.update_vm_status(data_file, index, "Importing", False, False, vm_index)
+            self.account.update_vm_status(data_file, index, "importing", False, False, vm_index)
         else:
             print "Error uploading"
-            self.account.update_vm_status(data_file, index, "Failed on Upload", False, True, vm_index)
+            self.account.update_vm_status(data_file, index, "failed on upload", False, True, vm_index)
             App.get_running_app().show_load()
             App.get_running_app().show_error("Error Uploading")
             return
@@ -129,10 +130,10 @@ class AddVMScreen(Screen):
                                           display_name, image_type, compartment_id)
         if image[0]:
             image_id = image[1]
-            self.account.update_vm_status(data_file, index, "Provisioning", False, False, vm_index)
+            self.account.update_vm_status(data_file, index, "provisioning", False, False, vm_index)
         else:
             print "Error creating image"
-            self.account.update_vm_status(data_file, index, "Failed Creating Custom Image", False, True, vm_index)
+            self.account.update_vm_status(data_file, index, "failed creating custom image", False, True, vm_index)
             App.get_running_app().show_error("Error Creating Custom Image")
             return
 
@@ -143,13 +144,13 @@ class AddVMScreen(Screen):
             instance_ip = vm[2]
         else:
             print "Error provisioning vm"
-            self.account.update_vm_status(data_file, index, "Failed Provisioning Virtual Machine", False, True, vm_index)
+            self.account.update_vm_status(data_file, index, "failed provisioning virtual machine", False, True, vm_index)
             App.get_running_app().show_load()
             App.get_running_app().show_error("Error Provisioning VM")
             return
 
         self.account.add_vm(data_file, index, display_name, instance_id, instance_ip)
-        self.account.update_vm(data_file, index, instance_id, instance_ip, "Running", True, False, vm_index)
+        self.account.update_vm(data_file, index, instance_id, instance_ip, "running", True, False, vm_index)
 
     def get_availability_domain(self, ad):
         self.selected_availability_domain = ad

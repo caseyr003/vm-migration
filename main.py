@@ -46,7 +46,7 @@ class MigrationApp(App):
         root.add_widget(self.vm_screen)
         self.load_data()
         return root
-      
+
     def dismiss_popup(self):
         self._popup.dismiss()
 
@@ -157,6 +157,7 @@ class MigrationApp(App):
         self.clear_compartment_dropdown()
         self.clear_bucket_dropdown()
         self.clear_image_chooser()
+        self.image_screen.custom_image_name.text = ''
         self.transition.direction = 'right'
         self.root.current = self.account.name
 
@@ -181,6 +182,7 @@ class MigrationApp(App):
         self.clear_vcn_dropdown()
         self.clear_subnet_dropdown()
         self.clear_image_chooser()
+        self.image_screen.custom_image_name.text = ''
 
     def clear_image_chooser(self):
         self.image_screen.image_chooser.file_btn.text = 'Choose File'

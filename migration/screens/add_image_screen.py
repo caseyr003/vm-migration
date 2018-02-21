@@ -34,9 +34,9 @@ class AddImageScreen(Screen):
         super(AddImageScreen, self).__init__(*args, **kwargs)
 
     def get_compartment(self, compartment):
-        App.get_running_app().show_load()
+        Thread(target=App.get_running_app().show_load).start()
         self.selected_compartment = compartment
-        Thread(target=self.get_bucket_list).start()
+        self.get_bucket_list()
 
     def get_bucket_list(self):
         compartment = self.selected_compartment
@@ -51,7 +51,6 @@ class AddImageScreen(Screen):
                 self.bucket_dropdown.create_bucket_dropdown(self.bucket_list)
             except:
                 App.get_running_app().dismiss_popup()
-
             App.get_running_app().dismiss_popup()
         else:
             self.bucket_dropdown.bucket_button.text = '-'

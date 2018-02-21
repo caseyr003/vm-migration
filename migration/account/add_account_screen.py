@@ -72,4 +72,4 @@ class AddAccountScreen(Screen):
         self.clear_input()
         App.get_running_app().dismiss_popup()
         self.parent.transition.direction = 'right'
-        self.parent.current = Accounts().name
+        self.parent.current = App.get_running_app().accounts.name
