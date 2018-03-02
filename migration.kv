@@ -347,6 +347,7 @@ ScreenManagement:
 
 <VMListItem>:
     vm_label: vm_label
+    status_box: status_box
     height: '140sp'
     size_hint_y: None
     orientation: 'vertical'
@@ -357,35 +358,44 @@ ScreenManagement:
             size: self.size
             pos: self.pos
     BoxLayout:
-        orientation: 'vertical'
+        orientation: 'horizontal'
         size_hint: [1, 0.9]
         padding: ['30dp', '20dp', '30dp', '20dp']
-        Label:
-            text: root.vm_name
-            size_hint: [1, 0.33]
-            text_size: self.size
-            font_size: '28sp'
-            bold: True
-            color: [0.02, 0.45, 0.81, 1]
+        BoxLayout:
+            padding: ['0dp', '20dp', '16dp', '10dp']
+            size: ('100sp','100sp')
+            size_hint: (None, None)
+            Image:
+                id: status_box
+                source: 'data/status/failed.png'
         BoxLayout:
             orientation: 'vertical'
-            size_hint: [1, 0.67]
             Label:
-                id: vm_label
-                text: root.vm_status
+                text: root.vm_name
+                size_hint: [1, 0.33]
                 text_size: self.size
-                font_size: '20sp'
+                font_size: '28sp'
                 bold: True
-                color: [90/255.0, 90/255.0, 90/255.0, 1]
-            Label:
-                text: root.vm_ip
-                text_size: self.size
-                bold: True
-                color: [90/255.0, 90/255.0, 90/255.0, 1]
-            Label:
-                text: root.vm_ocid
-                text_size: self.size
-                color: [90/255.0, 90/255.0, 90/255.0, 1]
+                color: [0.02, 0.45, 0.81, 1]
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint: [1, 0.67]
+                Label:
+                    id: vm_label
+                    text: root.vm_status
+                    text_size: self.size
+                    font_size: '20sp'
+                    bold: True
+                    color: [90/255.0, 90/255.0, 90/255.0, 1]
+                Label:
+                    text: root.vm_ip
+                    text_size: self.size
+                    bold: True
+                    color: [90/255.0, 90/255.0, 90/255.0, 1]
+                Label:
+                    text: root.vm_ocid
+                    text_size: self.size
+                    color: [90/255.0, 90/255.0, 90/255.0, 1]
 
     BoxLayout:
         orientation: 'vertical'
@@ -718,8 +728,9 @@ ScreenManagement:
         NavBar:
             BoxLayout:
                 Button:
-                    text: 'Cancel'
+                    text: 'Close'
                     width: self.width
+                    bold: True
                     on_release: app.view_accounts()
 
         BoxLayout:
@@ -740,9 +751,614 @@ ScreenManagement:
                 Button:
                     id: prev_btn
                     text: 'Previous'
+                    bold: True
                     disabled: True
+                    background_color: [0.75, 0.75, 0.75, 1]
                     on_release: root.previous()
                 Button:
                     id: next_btn
                     text: 'Next'
+                    bold: True
+                    background_color: [0.75, 0.75, 0.75, 1]
                     on_release: root.next()
+
+<HelpScreen1@BoxLayout>:
+    padding: '18dp'
+    orientation: 'vertical'
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint: [1,0.75]
+        Label:
+            text: 'Getting Started'
+            font_size: '38dp'
+            bold: True
+            color: [0.02, 0.45, 0.81, 1]
+            text_size: self.size
+        Label:
+            text: 'What you will need:'
+            font_size: '30dp'
+            bold: True
+            color: [0.3, 0.3, 0.3, 1]
+            text_size: self.size
+        BoxLayout:
+            orientation: 'horizontal'
+            padding: '18dp'
+            Label:
+                text: 'Oracle Cloud Infrastructure Account'
+                font_size: '24dp'
+                bold: True
+                color: [0.3, 0.3, 0.3, 1]
+                size_hint: [0.75, 1]
+                text_size: self.size
+            Image:
+                source: 'data/help/oci.png'
+                size_hint: [0.25, 1]
+
+        BoxLayout:
+            orientation: 'horizontal'
+            padding: '18dp'
+            Label:
+                text: 'Virtual Machine file in VMDK or QCOW2 format'
+                font_size: '24dp'
+                bold: True
+                color: [0.3, 0.3, 0.3, 1]
+                size_hint: [0.75, 1]
+                text_size: self.size
+            Image:
+                source: 'data/help/vm.png'
+                size_hint: [0.25, 1]
+    BoxLayout:
+        size_hint: [1,0.25]
+
+
+<HelpScreen2@BoxLayout>:
+    padding: '18dp'
+    orientation: 'vertical'
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'Adding Oracle Cloud Infrastructure Account'
+            font_size: '30dp'
+            bold: True
+            color: [0.02, 0.45, 0.81, 1]
+            text_size: self.size
+            multiline: True
+            size_hint: [1, .15]
+
+        Label:
+            text: 'Click Add OCI Account and Enter the following Information'
+            font_size: '22dp'
+            bold: True
+            color: [0.3, 0.3, 0.3, 1]
+            text_size: self.size
+            size_hint: [1, .15]
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: [1,0.75]
+            size_hint: [1, .5]
+            padding: '10dp'
+            canvas:
+                Color:
+                    rgba: [1,1,1,1]
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            BoxLayout:
+                orientation: 'vertical'
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'Name'
+                        font_size: '20dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'This name is the display name you want your account to have in the app'
+                        font_size: '12dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'Tenancy OCID'
+                        font_size: '20dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'This is the tenancy ocid that is associated with your OCI account'
+                        font_size: '12dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'User OCID'
+                        font_size: '20dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'This is the user ocid that is associated with your OCI user'
+                        font_size: '12dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+
+
+
+            BoxLayout:
+                orientation: 'vertical'
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'Region'
+                        font_size: '20dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'This should be the region where you want to move your VM such as us-phoenix-1'
+                        font_size: '12dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'Fingerprint'
+                        font_size: '20dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'This is the fingerprint that is associated with your OCI user'
+                        font_size: '12dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'Private Key'
+                        font_size: '20dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'This is the private key that is associated with your OCI user'
+                        font_size: '12dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+        Label:
+            text: 'For more information where you can find these values for your account click the link below'
+            font_size: '16dp'
+            bold: True
+            color: [0.3, 0.3, 0.3, 1]
+            size_hint: [0.75, 1]
+            text_size: self.size
+            multiline: False
+            size_hint: [1, .1]
+        Button:
+            size_hint: [1, .1]
+            text: 'More Information'
+            bold: True
+            background_color: [0.290, 0.670, 0.992, 1]
+            on_release: root.get_info()
+
+<HelpScreen3@BoxLayout>:
+    padding: '18dp'
+    orientation: 'vertical'
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'Choosing Image Options'
+            font_size: '30dp'
+            bold: True
+            color: [0.02, 0.45, 0.81, 1]
+            text_size: self.size
+            multiline: True
+            size_hint: [1, .1]
+
+        Label:
+            text: 'Go to the OCI Account where you want to launch the VM and select Migrate New VM'
+            font_size: '26dp'
+            bold: True
+            color: [0.3, 0.3, 0.3, 1]
+            text_size: self.size
+            size_hint: [1, .25]
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: [1, .55]
+            padding: '10dp'
+            canvas:
+                Color:
+                    rgba: [1,1,1,1]
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            BoxLayout:
+                orientation: 'vertical'
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'VMDK or QCOW2 file'
+                        font_size: '24dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'Select the VM file that you want to move to OCI from your computer'
+                        font_size: '14dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'Compartment'
+                        font_size: '24dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'Select the compartment in your OCI account you wish you to use'
+                        font_size: '14dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+
+            BoxLayout:
+                orientation: 'vertical'
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'Object Storage Bucket'
+                        font_size: '24dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'Select the OCI Object Storage Bucket where the file will be uploaded to'
+                        font_size: '14dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'Name'
+                        font_size: '24dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'This name will be used for the object storage file, the custom image and the VM'
+                        font_size: '14dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: [1, .2]
+
+
+<HelpScreen4@BoxLayout>:
+    padding: '18dp'
+    orientation: 'vertical'
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'Choosing Virtual Machine Options'
+            font_size: '30dp'
+            bold: True
+            color: [0.02, 0.45, 0.81, 1]
+            text_size: self.size
+            multiline: True
+            size_hint: [1, .15]
+
+        Label:
+            text: 'Press Next and select if you want to launch a virtual machine with the custom image you created.'
+            font_size: '22dp'
+            bold: True
+            color: [0.3, 0.3, 0.3, 1]
+            text_size: self.size
+            size_hint: [1, .15]
+        Label:
+            text: 'If you choose not to launch with VM then only a custom image will be created in your account.'
+            font_size: '20dp'
+            bold: True
+            color: [0.3, 0.3, 0.3, 1]
+            text_size: self.size
+            size_hint: [1, .15]
+        Label:
+            text: 'You will need a Virtual Cloud Network already provisioned in your OCI compartment if you choose to launch with VM'
+            font_size: '20dp'
+            bold: True
+            color: [0.3, 0.3, 0.3, 1]
+            text_size: self.size
+            size_hint: [1, .15]
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: [1, .4]
+            padding: '10dp'
+            canvas:
+                Color:
+                    rgba: [1,1,1,1]
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            BoxLayout:
+                orientation: 'vertical'
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'Availability Domain'
+                        font_size: '24dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'Select the Availability Domain where you want the VM to be provisioned'
+                        font_size: '14dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'Shape'
+                        font_size: '24dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'Select the Shape of the Virtual Machine the Image will be launched on'
+                        font_size: '14dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+
+            BoxLayout:
+                orientation: 'vertical'
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'Virtual Cloud Network'
+                        font_size: '24dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'Select the Virtual Cloud Network where you want the VM to be provisioned'
+                        font_size: '14dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    Label:
+                        size_hint: [1, 0.25]
+                        text: 'Subnet'
+                        font_size: '24dp'
+                        bold: True
+                        color: [0.02, 0.45, 0.81, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: False
+                    Label:
+                        size_hint: [1, 0.75]
+                        text: 'Select the Subnet where you want the VM to be provisioned'
+                        font_size: '14dp'
+                        bold: True
+                        color: [0.3, 0.3, 0.3, 1]
+                        size_hint: [0.75, 1]
+                        text_size: self.size
+                        multiline: True
+
+<HelpScreen5@BoxLayout>:
+    padding: '18dp'
+    orientation: 'vertical'
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint: [1 ,0.4]
+        Label:
+            text: 'Steps'
+            font_size: '32dp'
+            size_hint: [1, 0.2]
+            bold: True
+            color: [0.02, 0.45, 0.81, 1]
+            text_size: self.size
+        BoxLayout:
+            size_hint: [1, 0.8]
+            orientation: 'vertical'
+            padding: '10dp'
+            canvas:
+                Color:
+                    rgba: [1,1,1,1]
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            Label:
+                text: 'Step 1: Your VM file is uploaded to OCI Object Storage'
+                font_size: '20dp'
+                bold: True
+                color: [0.3, 0.3, 0.3, 1]
+                text_size: self.size
+            Label:
+                text: 'Step 2: A custom image is created from the VM file in Object Storage'
+                font_size: '20dp'
+                bold: True
+                color: [0.3, 0.3, 0.3, 1]
+                text_size: self.size
+            Label:
+                text: 'Step 3: A Virtaul Machine is provisioned from the custom image'
+                font_size: '20dp'
+                bold: True
+                color: [0.3, 0.3, 0.3, 1]
+                text_size: self.size
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint: [1, 0.5]
+        Label:
+            size_hint: [1, 0.18]
+            text: 'Status'
+            font_size: '30dp'
+            bold: True
+            color: [0.02, 0.45, 0.81, 1]
+            text_size: self.size
+        Label:
+            size_hint: [1, 0.12]
+            text: 'Once you start the process you can check the status of your upload'
+            font_size: '22dp'
+            bold: True
+            color: [0.02, 0.45, 0.81, 1]
+            text_size: self.size
+        BoxLayout:
+            size_hint: [1,0.7]
+            orientation: 'vertical'
+            canvas:
+                Color:
+                    rgba: [1,1,1,1]
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            BoxLayout:
+                orientation: 'horizontal'
+                padding: '10dp'
+                Image:
+                    size_hint: [0.1, 1]
+                    source: 'data/status/pending.png'
+                Label:
+                    size_hint: [0.9, 1]
+                    text: 'Uploading: The migration is in process'
+                    font_size: '20dp'
+                    bold: True
+                    color: [0.3, 0.3, 0.3, 1]
+                    text_size: self.size
+            BoxLayout:
+                orientation: 'horizontal'
+                padding: '10dp'
+                Image:
+                    size_hint: [0.1, 1]
+                    source: 'data/status/success.png'
+                Label:
+                    size_hint: [0.9, 1]
+                    text: 'Success: The migation process is complete'
+                    font_size: '20dp'
+                    bold: True
+                    color: [0.3, 0.3, 0.3, 1]
+                    text_size: self.size
+            BoxLayout:
+                orientation: 'horizontal'
+                padding: '10dp'
+                Image:
+                    size_hint: [0.1, 1]
+                    source: 'data/status/failed.png'
+                Label:
+                    size_hint: [0.9, 1]
+                    text: 'Failed: The migration process was not completed'
+                    font_size: '20dp'
+                    bold: True
+                    color: [0.3, 0.3, 0.3, 1]
+                    text_size: self.size
+    Label:
+        size_hint: [1, 0.1]
+        text: 'Congratulations! You are ready to start migrating VMs!'
+        font_size: '20dp'
+        bold: True
+        color: [0.3, 0.3, 0.3, 1]
+        text_size: self.size
