@@ -38,12 +38,14 @@ class MigrationApp(App):
         self.image_screen = AddImageScreen()
         self.vm_screen = AddVMScreen()
         self.add_account_screen = AddAccountScreen()
+        self.help_screen = HelpScreen()
         root = ScreenManager(transition=self.transition)
         root.add_widget(self.accounts)
         root.add_widget(self.add_account_screen)
         root.add_widget(self.account)
         root.add_widget(self.image_screen)
         root.add_widget(self.vm_screen)
+        root.add_widget(self.help_screen)
         self.load_data()
         return root
 
@@ -63,7 +65,6 @@ class MigrationApp(App):
 
     def check_file(self):
         file_exists = True
-
         try:
             file_exists = os.stat(self.data_file).st_size != 0
         except Exception:
@@ -92,8 +93,14 @@ class MigrationApp(App):
             self.dismiss_popup()
             self.transition.direction = 'left'
             self.root.current = self.account.name
+            self.account.prepare()
         else:
             self.show_error("Error Loading Account")
+
+    def account_added(self):
+        self.accounts.prepare()
+        self.transition.direction = 'right'
+        self.root.current = self.accounts.name
 
     def load_account(self, index):
         self.show_load()
@@ -112,6 +119,9 @@ class MigrationApp(App):
         else:
             print "Account Error"
             return
+
+    def prepare_vm_screen(self):
+        self.account.prepare()
 
     def load_image_options(self):
         self.image_screen.account = self.account.account
@@ -152,6 +162,10 @@ class MigrationApp(App):
     def view_accounts(self):
         self.transition.direction = 'right'
         self.root.current = self.accounts.name
+
+    def get_help(self):
+        self.transition.direction = 'left'
+        self.root.current = self.help_screen.name
 
     def cancel_image(self):
         self.clear_compartment_dropdown()

@@ -15,6 +15,7 @@ ScreenManagement:
     AddImageScreen:
     AddVMScreen:
     Accounts:
+    HelpScreen:
 
 
 <Screen>:
@@ -201,23 +202,50 @@ ScreenManagement:
 
 <Accounts>:
     name: 'account'
+    title_box: title_box
     # no_accounts_box: no_accounts_box
     BoxLayout:
         orientation: 'vertical'
         padding: '20dp'
-        NavBar:
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: '54dp'
+            padding: '8dp'
+
+            Image:
+                source: 'data/logo.png'
+                size_hint: [0.25, 1]
+
+            Label:
+                text: ''
+                size_hint: [0.3, 1]
 
             BoxLayout:
-
-                Button:
-                    text: 'Add OCI Account'
-                    width: self.width
-                    on_release: app.add_account()
+                size_hint: [0.45, 1]
+                BoxLayout:
+                    padding: [0, 0, 10, 0]
+                    size_hint: [0.35, 1]
+                    Button:
+                        text: 'Help'
+                        bold: True
+                        width: self.width
+                        on_release: app.get_help()
+                BoxLayout:
+                    size_hint: [0.65, 1]
+                    Button:
+                        text: 'Add OCI Account'
+                        bold: True
+                        width: self.width
+                        on_release: app.add_account()
 
         BoxLayout:
+            id: title_box
             orientation: 'vertical'
             height: '54dp'
             size_hint_y: None
+            padding: ['30dp', '20dp', '30dp', '20dp']
+            spacing: '20dp'
             Label:
                 text: 'Oracle Cloud Infrastructure Accounts'
                 bold: True
@@ -295,6 +323,7 @@ ScreenManagement:
             size_hint: [1, 0.34]
             Button:
                 text: 'Go to Account'
+                bold: True
                 on_release: root.account_details()
     BoxLayout:
         orientation: 'vertical'
@@ -439,6 +468,7 @@ ScreenManagement:
 <VMScreen>:
     name: 'vm'
     account_title: account_title
+    title_box: title_box
     # no_vms_box: no_vms_box
     # main_layout: main_layout
     BoxLayout:
@@ -486,33 +516,13 @@ ScreenManagement:
             orientation: 'vertical'
             height: '54dp'
             size_hint_y: None
+            id: title_box
             Label:
                 id: account_title
                 text: "Tenancy"
                 bold: True
                 font_size: '28dp'
                 color: [0.02, 0.45, 0.81, 1]
-
-        # BoxLayout:
-        #     id: no_vms_box
-        #     orientation: 'vertical'
-        #     height: '120dp'
-        #     size_hint_y: None
-        #     padding: '14sp'
-        #     canvas:
-        #         Color:
-        #             rgba: [1,1,1,1]
-        #         Rectangle:
-        #             size: self.size
-        #             pos: self.pos
-        #     Label:
-        #         text: 'No Virtual Machines Migrated'
-        #         font_size: '28dp'
-        #         color: [0.2, 0.2, 0.2, 1]
-        #     Label:
-        #         text: 'Click Migrate New VM to Get Started'
-        #         font_size: '20dp'
-        #         color: [0.4, 0.4, 0.4, 1]
 
         ListView:
             adapter: ListAdapter(data=root.data, cls=Factory.VMListItem, args_converter=root.args_converter)
@@ -652,3 +662,44 @@ ScreenManagement:
                 SaveButton:
                     text: 'Launch'
                     on_release: root.launch()
+
+<HelpScreen>:
+    name: 'help_screen'
+    carousel: carousel
+    prev_btn: prev_btn
+    next_btn: next_btn
+
+    BoxLayout:
+        padding: '18dp'
+        orientation: 'vertical'
+        NavBar:
+            BoxLayout:
+                Button:
+                    text: 'Cancel'
+                    width: self.width
+                    on_release: app.view_accounts()
+
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: '5dp'
+
+            BoxLayout:
+                orientation: 'vertical'
+                padding: [0, 16, 0, 0]
+                size_hint: [1, 0.9]
+                Carousel:
+                    id: carousel
+
+            BoxLayout:
+                orientation: 'horizontal'
+                padding: [0, 16, 0, 0]
+                size_hint: [1, 0.1]
+                Button:
+                    id: prev_btn
+                    text: 'Previous'
+                    disabled: True
+                    on_release: root.previous()
+                Button:
+                    id: next_btn
+                    text: 'Next'
+                    on_release: root.next()

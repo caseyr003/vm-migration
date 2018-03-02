@@ -4,7 +4,7 @@ from kivy.properties import StringProperty, ObjectProperty
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 
-from loading_popups import LoadDialog
+from loading_popups import LoadDialog, LoadingPopup
 
 
 # filechoosers.py
