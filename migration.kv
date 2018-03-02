@@ -45,10 +45,12 @@ ScreenManagement:
 <InputLabel@Label>:
     text_size: self.size
     color: [90/255.0, 90/255.0, 90/255.0, 1]
+    # bold: True
 
 <InputText@TextInput>:
     color: [90/255.0, 90/255.0, 90/255.0, 1]
-    background_color: [1, 1, 1, 1]
+    background_color: (1,1,1,1) if self.focus else (1,1,1,1)
+    border: (12, 12, 12, 12)
     multiline: False
 
 <NavButton@Button>:
@@ -71,6 +73,7 @@ ScreenManagement:
         Button:
             id: bucket_button
             disabled: True
+            bold: True
             text: '-'
 
 <CompartmentDropdown>:
@@ -83,6 +86,7 @@ ScreenManagement:
             text: 'Select Compartment'
         Button:
             id: compartment_button
+            bold: True
             disabled: True
             text: '-'
 
@@ -97,6 +101,7 @@ ScreenManagement:
         Button:
             id: availability_domain_button
             disabled: True
+            bold: True
             text: '-'
 
 <VirtualCloudNetworkDropdown>:
@@ -110,6 +115,7 @@ ScreenManagement:
         Button:
             id: vcn_button
             disabled: True
+            bold: True
             text: '-'
 
 <SubnetDropdown>:
@@ -123,6 +129,7 @@ ScreenManagement:
         Button:
             id: subnet_button
             disabled: True
+            bold: True
             text: '-'
 
 <ShapeDropdown>:
@@ -136,6 +143,7 @@ ScreenManagement:
         Button:
             id: shape_button
             disabled: True
+            bold: True
             text: '-'
 
 
@@ -149,6 +157,7 @@ ScreenManagement:
         Button:
             id: file_btn
             text: 'Choose File'
+            bold: True
             on_release: root.show_load()
 
 <KeyFileChooser>:
@@ -160,6 +169,7 @@ ScreenManagement:
         Button:
             id: file_btn
             text: 'Choose File'
+            bold: True
             on_release: root.show_load()
 
 ## Loading Popups
@@ -405,19 +415,28 @@ ScreenManagement:
 
                 Button:
                     text: 'Cancel'
+                    bold: True
                     width: self.width
                     on_release: root.cancel()
 
         BoxLayout:
             orientation: 'vertical'
             spacing: '5dp'
+            padding: ['20dp', '20dp', '20dp', '20dp']
+            canvas:
+                Color:
+                    rgba: [1,1,1,1]
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
 
             BoxLayout:
                 orientation: 'vertical'
                 Label:
                     text: 'Oracle Cloud Infrastructure Account'
-                    font_size: '22dp'
-                    color: [.3, .3, .3, 1]
+                    font_size: '24dp'
+                    bold: True
+                    color: [0.02, 0.45, 0.81, 1]
 
             BoxLayout:
                 orientation: 'vertical'
@@ -463,6 +482,7 @@ ScreenManagement:
                 padding: [0, 16, 0, 0]
                 SaveButton:
                     text: 'Save'
+                    bold: True
                     on_release: root.save_account()
 
 <VMScreen>:
@@ -496,6 +516,7 @@ ScreenManagement:
                     size_hint: [0.25, 1]
                     Button:
                         text: 'Back'
+                        bold: True
                         width: self.width
                         on_release: app.view_accounts()
                 BoxLayout:
@@ -503,12 +524,14 @@ ScreenManagement:
                     size_hint: [0.25, 1]
                     Button:
                         text: 'Refresh'
+                        bold: True
                         width: self.width
                         on_release: root.refresh()
                 BoxLayout:
                     size_hint: [0.5, 1]
                     Button:
                         text: 'Migrate New VM'
+                        bold: True
                         width: self.width
                         on_release: root.add_vm()
 
@@ -544,19 +567,28 @@ ScreenManagement:
 
                 Button:
                     text: 'Cancel'
+                    bold: True
                     width: self.width
                     on_release: app.cancel_image()
 
         BoxLayout:
             orientation: 'vertical'
             spacing: '5dp'
+            padding: ['20dp', '20dp', '20dp', '20dp']
+            canvas:
+                Color:
+                    rgba: [1,1,1,1]
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
 
             BoxLayout:
                 orientation: 'vertical'
                 Label:
                     text: 'Image Details'
-                    font_size: '22dp'
-                    color: [.3, .3, .3, 1]
+                    font_size: '24dp'
+                    bold: True
+                    color: [0.02, 0.45, 0.81, 1]
 
             ImageFileChooser:
                 id: image_chooser
@@ -573,12 +605,12 @@ ScreenManagement:
                     id: custom_image_name
                     text: ''
 
-
             BoxLayout:
                 orientation: 'vertical'
                 padding: [0, 16, 0, 0]
                 SaveButton:
                     text: 'Next'
+                    bold: True
                     on_release: root.add_vm()
 
 <AddVMScreen>:
@@ -613,25 +645,35 @@ ScreenManagement:
                     size_hint: [0.4, 1]
                     Button:
                         text: 'Back'
+                        bold: True
                         width: self.width
                         on_release: app.back_vm()
                 BoxLayout:
                     size_hint: [0.6, 1]
                     Button:
                         text: 'Cancel'
+                        bold: True
                         width: self.width
                         on_release: app.cancel_vm()
 
         BoxLayout:
             orientation: 'vertical'
             spacing: '5dp'
+            padding: ['20dp', '20dp', '20dp', '20dp']
+            canvas:
+                Color:
+                    rgba: [1,1,1,1]
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
 
             BoxLayout:
                 orientation: 'vertical'
                 Label:
                     text: 'Virtual Machine Details'
-                    font_size: '22dp'
-                    color: [.3, .3, .3, 1]
+                    font_size: '24dp'
+                    bold: True
+                    color: [0.02, 0.45, 0.81, 1]
 
             BoxLayout:
                 orientation: 'vertical'
@@ -661,6 +703,7 @@ ScreenManagement:
                 padding: [0, 16, 0, 0]
                 SaveButton:
                     text: 'Launch'
+                    bold: True
                     on_release: root.launch()
 
 <HelpScreen>:
