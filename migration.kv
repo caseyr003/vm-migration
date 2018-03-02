@@ -348,7 +348,7 @@ ScreenManagement:
 <VMListItem>:
     vm_label: vm_label
     status_box: status_box
-    height: '140sp'
+    height: '146sp'
     size_hint_y: None
     orientation: 'vertical'
     canvas:
@@ -385,7 +385,7 @@ ScreenManagement:
                     text: root.vm_status
                     text_size: self.size
                     font_size: '20sp'
-                    bold: True
+                    italic: True
                     color: [90/255.0, 90/255.0, 90/255.0, 1]
                 Label:
                     text: root.vm_ip
@@ -1138,21 +1138,21 @@ ScreenManagement:
             size_hint: [1, .15]
         Label:
             text: 'If you choose not to launch with VM then only a custom image will be created in your account.'
-            font_size: '20dp'
+            font_size: '16dp'
             bold: True
-            color: [0.3, 0.3, 0.3, 1]
+            color: [0.5, 0.5, 0.5, 1]
             text_size: self.size
-            size_hint: [1, .15]
+            size_hint: [1, .1]
         Label:
             text: 'You will need a Virtual Cloud Network already provisioned in your OCI compartment if you choose to launch with VM'
-            font_size: '20dp'
+            font_size: '16dp'
             bold: True
-            color: [0.3, 0.3, 0.3, 1]
+            color: [0.5, 0.5, 0.5, 1]
             text_size: self.size
-            size_hint: [1, .15]
+            size_hint: [1, .1]
         BoxLayout:
             orientation: 'horizontal'
-            size_hint: [1, .4]
+            size_hint: [1, .5]
             padding: '10dp'
             canvas:
                 Color:
@@ -1305,7 +1305,7 @@ ScreenManagement:
             text: 'Once you start the process you can check the status of your upload'
             font_size: '22dp'
             bold: True
-            color: [0.02, 0.45, 0.81, 1]
+            color: [0.3, 0.3, 0.3, 1]
             text_size: self.size
         BoxLayout:
             size_hint: [1,0.7]
@@ -1360,5 +1360,5 @@ ScreenManagement:
         text: 'Congratulations! You are ready to start migrating VMs!'
         font_size: '20dp'
         bold: True
-        color: [0.3, 0.3, 0.3, 1]
+        color: [0.02, 0.45, 0.81, 1]
         text_size: self.size

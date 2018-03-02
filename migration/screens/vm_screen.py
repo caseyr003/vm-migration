@@ -24,16 +24,17 @@ class VMScreen(Screen):
     #     Clock.schedule_once(self.prepare, 0)
 
     def prepare(self, *args):
-        if self.data == []:
-            self.no_vm_label = Label(text='No VMs Migrated', bold=True, font_size='18dp',color=[0.3,0.3,0.3,1])
-            self.title_box.add_widget(self.no_vm_label)
-            self.title_box.height = '154dp'
-        else:
-            try:
-                self.title_box.remove_widget(self.no_vm_label)
-                self.title_box.height = '54dp'
-            except:
-                print "no button"
+        print "need to fix prepare"
+        # if self.data == []:
+        #     self.no_vm_label = Label(text='No VMs Migrated', bold=True, font_size='18dp',color=[0.3,0.3,0.3,1])
+        #     self.title_box.add_widget(self.no_vm_label)
+        #     self.title_box.height = '154dp'
+        # else:
+        #     try:
+        #         self.title_box.remove_widget(self.no_vm_label)
+        #         self.title_box.height = '54dp'
+        #     except:
+        #         print "no button"
 
     def args_converter(self, row_index, item):
         return {
