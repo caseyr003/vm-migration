@@ -60,6 +60,9 @@ class Account:
             config = oci.config.from_file(file_location=config_file)
             identity = oci.identity.IdentityClient(config)
             user = identity.get_user(config["user"])
+            print user.data.name
+            print user.data.description
+            print user.data.lifecycle_state
             success = True
         except:
             print "An Error Occured"

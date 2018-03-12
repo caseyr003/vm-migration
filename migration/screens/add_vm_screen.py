@@ -161,7 +161,6 @@ class AddVMScreen(Screen):
             App.get_running_app().load_data()
             return
 
-        self.account.add_vm(data_file, index, display_name, instance_id, instance_ip)
         self.account.update_vm(data_file, index, instance_id, instance_ip, "running", True, False, vm_index)
         App.get_running_app().prepare_vm_screen()
         App.get_running_app().load_data()

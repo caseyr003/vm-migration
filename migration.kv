@@ -301,32 +301,45 @@ ScreenManagement:
         orientation: 'vertical'
         padding: ['30dp', '20dp', '30dp', '20dp']
         size_hint: [1, 0.9]
-        Label:
-            text: root.account_name
-            text_size: self.size
-            font_size: '28sp'
-            bold: True
-            color: [0/255.0, 168/255.0, 28/255.0, 1]
-            size_hint: [1, 0.2]
-
         BoxLayout:
-            size_hint: [1, 0.46]
-            orientation: 'vertical'
-            Label:
-                text: root.account_region
-                text_size: self.size
-                font_size: '20sp'
-                bold: True
-                color: [90/255.0, 90/255.0, 90/255.0, 1]
-            Label:
-                text: root.account_tenancy
-                text_size: self.size
-                color: [90/255.0, 90/255.0, 90/255.0, 1]
+            orientation: 'horizontal'
+            BoxLayout:
+                orientation: 'vertical'
+                Label:
+                    text: root.account_name
+                    text_size: self.size
+                    font_size: '28sp'
+                    bold: True
+                    color: [0/255.0, 168/255.0, 28/255.0, 1]
+                    size_hint: [1, 0.2]
 
-            Label:
-                text: root.account_user
-                text_size: self.size
-                color: [90/255.0, 90/255.0, 90/255.0, 1]
+                BoxLayout:
+                    size_hint: [1, 0.46]
+                    orientation: 'vertical'
+                    Label:
+                        text: root.account_region
+                        text_size: self.size
+                        font_size: '20sp'
+                        bold: True
+                        color: [90/255.0, 90/255.0, 90/255.0, 1]
+                    Label:
+                        text: root.account_tenancy
+                        text_size: self.size
+                        color: [90/255.0, 90/255.0, 90/255.0, 1]
+
+                    Label:
+                        text: root.account_user
+                        text_size: self.size
+                        color: [90/255.0, 90/255.0, 90/255.0, 1]
+
+            BoxLayout:
+                padding: ['0dp', '0dp', '0dp', '70dp']
+                size_hint: [0.15, 1]
+
+                # Button:
+                #     text: 'Remove'
+                #     background_color: [1, 0, 0, 1]
+
 
         BoxLayout:
             padding: 0, 10, 0, 0
@@ -345,6 +358,7 @@ ScreenManagement:
                 size: self.size
                 pos: self.pos
 
+# Display Box shown for each VM in account
 <VMListItem>:
     vm_label: vm_label
     status_box: status_box
@@ -357,29 +371,38 @@ ScreenManagement:
         Rectangle:
             size: self.size
             pos: self.pos
+
     BoxLayout:
         orientation: 'horizontal'
         size_hint: [1, 0.9]
         padding: ['30dp', '20dp', '30dp', '20dp']
+
         BoxLayout:
             padding: ['0dp', '20dp', '16dp', '10dp']
             size: ('100sp','100sp')
             size_hint: (None, None)
+
             Image:
                 id: status_box
                 source: 'data/status/failed.png'
+
         BoxLayout:
             orientation: 'vertical'
+            padding: '8dp'
+            size_hint: [0.85, 1]
+
             Label:
                 text: root.vm_name
-                size_hint: [1, 0.33]
+                size_hint: [1, 0.4]
                 text_size: self.size
                 font_size: '28sp'
                 bold: True
                 color: [0.02, 0.45, 0.81, 1]
+
             BoxLayout:
                 orientation: 'vertical'
-                size_hint: [1, 0.67]
+                size_hint: [1, 0.6]
+
                 Label:
                     id: vm_label
                     text: root.vm_status
@@ -387,15 +410,23 @@ ScreenManagement:
                     font_size: '20sp'
                     italic: True
                     color: [90/255.0, 90/255.0, 90/255.0, 1]
-                Label:
+
+                TextInput:
                     text: root.vm_ip
                     text_size: self.size
                     bold: True
+                    font_size: '16sp'
                     color: [90/255.0, 90/255.0, 90/255.0, 1]
-                Label:
-                    text: root.vm_ocid
-                    text_size: self.size
-                    color: [90/255.0, 90/255.0, 90/255.0, 1]
+                    background_color: (1,1,1,0) if self.focus else (1,1,1,0)
+                    readonly: True
+
+        BoxLayout:
+            padding: ['0dp', '10dp', '0dp', '50dp']
+            size_hint: [0.15, 1]
+
+            # Button:
+            #     text: 'Remove'
+            #     background_color: [1, 0, 0, 1]
 
     BoxLayout:
         orientation: 'vertical'
@@ -419,6 +450,7 @@ ScreenManagement:
     BoxLayout:
         padding: '18dp'
         orientation: 'vertical'
+
         NavBar:
 
             BoxLayout:
@@ -610,7 +642,7 @@ ScreenManagement:
             BoxLayout:
                 orientation: 'vertical'
                 InputLabel:
-                    text: 'Name for custom image'
+                    text: 'OCI Display Name'
                 InputText:
                     id: custom_image_name
                     text: ''
