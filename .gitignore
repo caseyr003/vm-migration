@@ -5,7 +5,6 @@ venv/
 Processes/
 *.pem
 test.py
-migration_tool.spec
 dist/
 build/
 migration/kivy
